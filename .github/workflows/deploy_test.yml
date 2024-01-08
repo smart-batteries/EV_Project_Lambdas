@@ -26,12 +26,15 @@ jobs:
           UPDATED_PIPELINE_IMAGES==$(echo "$UPDATED" | grep -o '+_pipeline/[^/]\+/' | uniq)
           UPDATED_SOLVER_IMAGES=$(echo "$UPDATED" | grep -o '+_olver/' | uniq)
           UPDATED_IMAGES="$UPDATED_PIPELINE_IMAGES $UPDATED_SOLVER_IMAGES"
-          
-          if [ -n "$UPDATED_IMAGES" ]; then
-            echo "These images have been updated:"
-            echo "$UPDATED_IMAGES"
-            echo "Length of the variable: ${#UPDATED_IMAGES}"
-          else
-            echo "No Docker images have been updated. Skipping deployment."
-            exit 0
-          fi
+
+          echo "UPDATED: "
+          echo "$UPDATED"
+
+          echo "UPDATED_PIPELINE_IMAGES: "
+          echo "$UPDATED_PIPELINE_IMAGES"
+
+          echo "UPDATED_SOLVER_IMAGES:"
+          echo "$UPDATED_SOLVER_IMAGES"
+
+          echo "UPDATED_IMAGES:"
+          echo "$UPDATED_IMAGES"
