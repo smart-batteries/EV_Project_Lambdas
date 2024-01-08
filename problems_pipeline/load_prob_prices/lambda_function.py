@@ -35,22 +35,21 @@ def lambda_handler(event, context):
         try:
             cur.callproc("extract_time_window", [prob_id])
             window = cur.fetchone()
-            start_time, end_time = window
-            logger.info(f"Successfully retrieved the start-time: {start_time} and end-time: {end_time}.")
+            start_time, end_time, node = window
+            logger.info(f"Successfully retrieved the time window, from {start_time} to {end_time}, for node {node}.")
 
         except Exception as e:
             logger.error("ERROR: Failed to retrieve the start & end times of the time window.")
             logger.error(e)
             sys.exit()
         
-        # Transform the start & end times to a series of half-hour intervals
+        # Extract the forecast prices, for each half-hour interval of the time window for that node, from elec_prices table
         try:
-            ##################### for now, just using a single chosen node, KAW2201
-            cur.callproc("transform_time_window", [start_time, end_time])
+            cur.callproc("extract_prob_prices", [start_time, end_time, node])
             forecast_data = cur.fetchall()
             start_period = min(forecast_data, key = lambda x: x[0])[0]
             end_period = max(forecast_data, key = lambda x: x[0])[0]
-            logger.info(f"Successfully extracted the trading periods, from periods {start_period} to {end_period}.")
+            logger.info(f"Successfully extracted the forecast prices, from trading periods {start_period} to {end_period}.")
 
         except Exception as e:
             logger.error("ERROR: Failed to extract the trading periods for the time window.")
@@ -58,28 +57,19 @@ def lambda_handler(event, context):
             sys.exit()
         
         for forecast in forecast_data:
-
-            # Extract the forecast data of each half-hour interval of the optimisation problem, from elec_prices table
+                
+            # Insert the forecast price of each half-hour interval of the optimisation problem, into opt_prob_prices table
             try:
                 trading_period = forecast[0]
                 price = forecast[2]
                 time_of_forecast = forecast[3]
-                logger.info(f"Successfully retrieved the forecast prices, for trading period: {trading_period}.")
-
-            except Exception as e:
-                logger.error("ERROR: Failed to retrieve the forecast prices.")
-                logger.error(e)
-                sys.exit()
-                
-            # Insert the forecast price of each half-hour interval of the optimisation problem, into opt_prob_prices table
-            try:
                 cur.callproc(
                     "insert_prob_prices",
                     (prob_id, trading_period, price, time_of_forecast)
                 )
                 conn.commit()
                 price_id = cur.fetchone()[0]
-                logger.info(f"Successfully inserted forecast data, with the price id: {price_id}.")
+                logger.info(f"Successfully inserted forecast data, with price id {price_id} for trading period {trading_period}.")
                 
             except Exception as e:
                 logger.error("ERROR: Failed to insert the forecast data.")

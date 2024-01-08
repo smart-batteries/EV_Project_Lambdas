@@ -2,8 +2,6 @@ import os
 import logging
 import sys
 import psycopg
-import json
-from datetime import datetime, timedelta
 
 # db connection settings
 host = os.environ['RDS_HOST']
@@ -86,24 +84,3 @@ def round_time_down(dt):
     else:
         dt = dt.replace(minute=0, second=0, microsecond=0)
     return dt
-
-
-
-
-
-
-
-import requests
-from bs4 import BeautifulSoup
-
-icp_number = "xxx" ############### need icp_number from user input
-icp_url = f"https://www.ea.govt.nz/your-power/your-meter/icp/?icp={icp_number}&load_more=True"
-response = requests.get(icp_url)
-
-if response.status_code == 200:
-    soup = BeautifulSoup(response.text, 'html.parser')
-    # Find the <th>POC</th> element
-    poc_tag = soup.find('th', text='POC')
-    if poc_tag:
-        # Find the next <th> tag
-        poc_number = poc_tag.find_next('th').text

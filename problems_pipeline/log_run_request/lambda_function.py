@@ -36,13 +36,22 @@ def lambda_handler(event, context):
         # Extract info from user's external API call
         try:
             user_input = event['queryStringParameters']
-            start_time = user_input['start_time']
-            end_time = user_input['end_time']
-            kwh_to_charge = user_input['kwh_to_charge']
-            kw_charge_rate = user_input['kw_charge_rate']
+            if 'start' in user_input:
+                start_time = user_input.get('start')
+            if 'end' in user_input:
+                end_time = user_input.get('end')
+            if 'kwh' in user_input:
+                kwh_to_charge = user_input.get('kwh')
+            if 'kw' in user_input:
+                kw_charge_rate = user_input.get('kw')
+            if 'node' in user_input:
+                node = user_input.get('node')
             logger.info("Successfully extracted user input data.")
 
-        except (Exception) as e:
+        # except KeyError as e:
+        #    pass
+
+        except Exception as e:
             logger.error("ERROR: Failed to extract user input data.")
             logger.error(e)
             sys.exit()
@@ -55,7 +64,8 @@ def lambda_handler(event, context):
                     start_time,
                     end_time,
                     kwh_to_charge,
-                    kw_charge_rate
+                    kw_charge_rate,
+                    node
                 )
             )
             conn.commit()
