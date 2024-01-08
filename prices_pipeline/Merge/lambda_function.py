@@ -48,7 +48,6 @@ def lambda_handler(event, context):
             try:
                 price_forecasts = json.loads(record['body'])
                 time_of_forecast = price_forecasts[0]["lastRunTime"]
-                ######## in each WITS API call, all forecasts were made at the same... is this true of PRSL as well as PRSS?
                 logger.info(f"Successfully extracted price data from queue, for time of forecast: {time_of_forecast}.")
 
             except Exception as e:
