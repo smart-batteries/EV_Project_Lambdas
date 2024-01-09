@@ -23,7 +23,7 @@ jobs:
         id: updated-images
         run: |
           UPDATED=$(git diff --name-only HEAD^ HEAD)
-          UPDATED_PIPELINE_IMAGES==$(echo "$UPDATED" | grep -o '+_pipeline/[^/]\+/' | uniq)
+          UPDATED_PIPELINE_IMAGES=$(echo "$UPDATED" | grep -o '+_pipeline/[^/]\+/' | uniq)
           UPDATED_SOLVER_IMAGES=$(echo "$UPDATED" | grep -o '+_olver/' | uniq)
           UPDATED_IMAGES="$UPDATED_PIPELINE_IMAGES $UPDATED_SOLVER_IMAGES"
 
