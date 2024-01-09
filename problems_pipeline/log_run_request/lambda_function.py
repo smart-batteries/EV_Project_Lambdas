@@ -4,6 +4,7 @@ import sys
 import psycopg
 import json
 import boto3
+from datetime import datetime
 
 # Postgres connection settings
 host = os.environ['RDS_HOST']
@@ -33,21 +34,23 @@ def lambda_handler(event, context):
 
     with conn.cursor() as cur:
             
-        # Extract info from user's external API call
+        # Extract user's input data from their API call
         try:
             user_input = event['queryStringParameters']
-            if 'start' in user_input:
-                start_time = user_input.get('start')
-            if 'end' in user_input:
-                end_time = user_input.get('end')
-            if 'kwh' in user_input:
-                kwh_to_charge = user_input.get('kwh')
-            if 'kw' in user_input:
-                kw_charge_rate = user_input.get('kw')
-            if 'node' in user_input:
+            expected_input = ('start', 'end', 'kwh', 'kw', 'node')
+            if all(key in user_input for key in expected_input):
+                start_time = datetime.strptime(user_input.get('start'), '%Y-%m-%d %H:%M')
+                end_time = datetime.strptime(user_input.get('end'), '%Y-%m-%d %H:%M')
+                kwh_to_charge = float(user_input.get('kwh'))
+                kw_charge_rate = float(user_input.get('kw'))
                 node = user_input.get('node')
-            logger.info("Successfully extracted user input data.")
-
+                logger.info("Successfully extracted user input data.")
+            else:
+                missing_keys = [key for key in expected_input if key not in user_input]
+                logger.error("ERROR: Failed to extract user input data, due to incomplete API call.")
+                logger.error("Missing data: {}".format(missing_keys))
+                sys.exit()
+                
         # except KeyError as e:
         #    pass
 
