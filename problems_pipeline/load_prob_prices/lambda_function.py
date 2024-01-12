@@ -43,13 +43,13 @@ def lambda_handler(event, context):
             logger.error(e)
             sys.exit()
         
-        # Extract the forecast prices, for each half-hour interval of the time window for that node, from elec_prices table
+        # Extract the price forecasts, for each half-hour interval of the time window for that node, from elec_prices table
         try:
             cur.callproc("extract_prob_prices", [start_time, end_time, node])
             forecast_data = cur.fetchall()
             start_period = min(forecast_data, key = lambda x: x[0])[0]
             end_period = max(forecast_data, key = lambda x: x[0])[0]
-            logger.info(f"Successfully extracted the forecast prices, from trading periods {start_period} to {end_period}.")
+            logger.info(f"Successfully extracted the price forecasts, from trading periods {start_period} to {end_period}.")
 
         except Exception as e:
             logger.error("ERROR: Failed to extract the trading periods for the time window.")
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
         
         for forecast in forecast_data:
                 
-            # Insert the forecast price of each half-hour interval of the optimisation problem, into opt_prob_prices table
+            # Insert the price forecasts of each half-hour interval of the optimisation problem, into opt_prob_prices table
             try:
                 trading_period = forecast[0]
                 price = forecast[2]
