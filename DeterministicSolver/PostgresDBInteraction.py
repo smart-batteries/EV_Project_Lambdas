@@ -17,12 +17,15 @@ class DeterministicDatasetBuilder():
         
 
     def getDataFromRunID(self, runID):
-        self.dataset = Deterministic_Optimizer.Deterministic_Dataset()
-        self.connectToDB()
-        self.loadRunConfig(runID)
-        self.loadPriceData(runID)        
-        self.closeDBConnection()
-        return self.dataset
+        try: 
+            self.dataset = Deterministic_Optimizer.Deterministic_Dataset()
+            self.connectToDB()
+            self.loadRunConfig(runID)
+            self.loadPriceData(runID)        
+            self.closeDBConnection()
+            return self.dataset
+        except(Exception) as e:
+            raise
 
     def connectToDB(self):
         self.logger.info("Connecting to DB")    
@@ -34,6 +37,7 @@ class DeterministicDatasetBuilder():
             dbname = os.environ['DB_NAME']
         except(Exception) as e:
             logging.error("Environment variables were not defined")
+            raise
         
         try:
             self.conn = psycopg2.connect(host=host, user=user, password=password, dbname=dbname, connect_timeout=5)
@@ -42,7 +46,7 @@ class DeterministicDatasetBuilder():
         except (Exception, psycopg2.Error) as e:
             self.logger.error("ERROR: Failed to connect to PostgreSQL.")
             self.logger.error(e)
-            sys.exit()
+            raise
 
     def closeDBConnection(self):
         self.logger.info("Closing DB Connection")        
@@ -78,7 +82,7 @@ class DeterministicDatasetBuilder():
             except (Exception, psycopg2.Error) as e:
                 self.logger.error("ERROR: Failed to get run config data from database using run ID " + runID)
                 self.logger.error(e)
-                sys.exit() #TODO Correct way to abort run and preserve the lamda for other, correct runs?
+                raise
     
     def loadPriceData(self, runID):
         self.logger.info("Loading Prices")            
@@ -102,7 +106,7 @@ class DeterministicDatasetBuilder():
             except (Exception, psycopg2.Error) as e:
                 self.logger.error("ERROR: Failed to get deterministic future price data from database using run ID " + runID)
                 self.logger.error(e)
-                sys.exit()
+                raise
 
 
 
@@ -118,12 +122,16 @@ class DeterministicSolutionSaver():
         
 
     def saveSolutionForRunID(self, solution, runID):
-        self.solution = solution
-        self.runID = runID
-        self.connectToDB()
-        self.saveSolveMetadata()
-        self.saveModelDecisions()
-        self.closeDBConnection()        
+        
+        try:
+            self.solution = solution
+            self.runID = runID
+            self.connectToDB()
+            self.saveSolveMetadata()
+            self.saveModelDecisions()
+            self.closeDBConnection()        
+        except(Exception) as e:
+            raise
 
     def connectToDB(self):
         self.logger.info("Connecting to DB")    
@@ -140,7 +148,7 @@ class DeterministicSolutionSaver():
         except (Exception, psycopg2.Error) as e:
             self.logger.error("ERROR: Failed to connect to PostgreSQL.")
             self.logger.error(e)
-            sys.exit()
+            raise
 
     
     def saveSolveMetadata(self):
@@ -156,7 +164,7 @@ class DeterministicSolutionSaver():
             except (Exception, psycopg2.Error) as e:
                 self.logger.error("ERROR: Failed to get save the solve's metadata using run ID " + self.runID)
                 self.logger.error(e)
-                sys.exit()
+                raise
 
     def saveModelDecisions(self):
         self.logger.info("Saving Decisions")
@@ -176,7 +184,7 @@ class DeterministicSolutionSaver():
             except (Exception, psycopg2.Error) as e:
                 self.logger.error("ERROR: Failed to save the charing decisions using run ID " + self.runID)
                 self.logger.error(e)
-                sys.exit()
+                raise
 
 
 

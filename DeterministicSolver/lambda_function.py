@@ -20,7 +20,12 @@ def handler(event, context):
     runID = event['RunID']    
     
     model = Deterministic_Optimizer.Deterministic_Model(logger)
-    model.loadSolveAndSave(runID)
+
+    try:
+        model.loadSolveAndSave(runID)
+    except(Exception) as e:
+        logger.error("An error occured, return from the lambda function handler to exit gracefully") 
+        return   
     
     logger.info("Solve Ran And did not error")
    

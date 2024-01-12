@@ -16,11 +16,14 @@ class Deterministic_Model:
         self.logger = logger
 
     def loadSolveAndSave(self, runID):        
-        self.loadDataset(runID)
-        self.formulate()
-        self.optimize()
-        self.generateSolution(runID)
-        self.saveSolution(runID)
+        try:
+            self.loadDataset(runID)
+            self.formulate()
+            self.optimize()
+            self.generateSolution(runID)
+            self.saveSolution(runID)
+        except(Exception) as e:
+            raise
         
 
     def loadDataset(self, runID):
