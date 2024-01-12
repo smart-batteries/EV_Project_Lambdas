@@ -5,15 +5,14 @@ import uuid
 import PostgresDBInteraction
 
 class Deterministic_Model:
-    CBCModel = None
-    chargeDecisions = None
-    modelResult = None
-    dataset = None
-    solution = None
-    logger = None
 
     def __init__(self, logger) -> None:
         self.logger = logger
+        self.CBCModel = None
+        self.chargeDecisions = None
+        self.modelResult = None
+        self.dataset = None
+        self.solution = None
 
     def loadSolveAndSave(self, runID):        
         try:
@@ -21,7 +20,7 @@ class Deterministic_Model:
             self.formulate()
             self.optimize()
             self.generateSolution(runID)
-            self.saveSolution(runID)
+            self.saveSolution(runID)            
         except(Exception) as e:
             raise
         
@@ -54,7 +53,7 @@ class Deterministic_Model:
         self.modelResult = self.CBCModel.optimize(max_seconds=60)
 
     def generateSolution(self, runID):
-        self.solution = Deterministic_Solution(self.modelResult, self.CBCModel, self.chargeDecisions, runID)        
+        self.solution = Deterministic_Solution(self.modelResult, self.CBCModel, self.chargeDecisions, runID, self.dataset.priceIDs)        
     
     def saveSolution(self, runID):
         PostgresDBInteraction.DeterministicSolutionSaver(self.logger).saveSolutionForRunID(self.solution, runID)
@@ -63,50 +62,56 @@ class Deterministic_Model:
 
 class Deterministic_Solution:    
 
-    feasibility = None
-    objectiveValue = None
-    decisions = []
+    
         
-    def __init__(self, modelResult, model, chargeDecisions, runID):
-        logging.info(modelResult)
-        logging.info(model)
-        logging.info(chargeDecisions)
-        i = 1
-        for chargeDecision in chargeDecisions:
-            self.decisions.append(( uuid.UUID(runID), i, chargeDecision.x >= 0.5 ))
-            i = i + 1
+    def __init__(self, modelResult, Model_CBC, chargeDecisions, runID, priceIDs):        
+        try:
+            self.feasibility = None
+            self.objectiveValue = None       
+            self.decisions = []
+            logger.info(modelResult)
+            logger.info(Model_CBC)
+            logger.info(chargeDecisions)            
+            
+            i = 1
+            for chargeDecision in chargeDecisions:
+                self.decisions.append(( uuid.UUID(runID), i, chargeDecision.x >= 0.5, priceIDs[i-1]))
+                i = i + 1        
 
-        if(modelResult == OptimizationStatus.OPTIMAL):
-            self.feasibility = 0
-        elif(modelResult == OptimizationStatus.INFEASIBLE):
-            self.feasibility = 1
-        elif(modelResult == OptimizationStatus.UNBOUNDED):
-            self.feasibility = 2
-        elif(modelResult == OptimizationStatus.FEASIBLE):
-            self.feasibility = 3
-        elif(modelResult == OptimizationStatus.INT_INFEASIBLE):
-            self.feasibility = 4
-        elif(modelResult == OptimizationStatus.NO_SOLUTION_FOUND):
-            self.feasibility = 5
-        elif(modelResult == OptimizationStatus.LOADED):
-            self.feasibility = 6
-        elif(modelResult == OptimizationStatus.CUTOFF):
-            self.feasibility = 7
-        else:
-            self.feasibility = -1
+            if(modelResult == OptimizationStatus.OPTIMAL):
+                self.feasibility = 0
+            elif(modelResult == OptimizationStatus.INFEASIBLE):
+                self.feasibility = 1
+            elif(modelResult == OptimizationStatus.UNBOUNDED):
+                self.feasibility = 2
+            elif(modelResult == OptimizationStatus.FEASIBLE):
+                self.feasibility = 3
+            elif(modelResult == OptimizationStatus.INT_INFEASIBLE):
+                self.feasibility = 4
+            elif(modelResult == OptimizationStatus.NO_SOLUTION_FOUND):
+                self.feasibility = 5
+            elif(modelResult == OptimizationStatus.LOADED):
+                self.feasibility = 6
+            elif(modelResult == OptimizationStatus.CUTOFF):
+                self.feasibility = 7
+            else:
+                self.feasibility = -1
 
-        
-        self.objectiveValue = model.objective_value  
+            
+            self.objectiveValue = Model_CBC.objective_value  
+        except(Exception) as e:
+            logger.error(e, "Issue with generating a aloution object from solver data")
+            raise
     
 
 
 class Deterministic_Dataset:    
-    periodsUntilDeadline = None
-    periodsOfChargeRequired = None
-    prices = None        
     
     def __init__(self):
-        pass    
+        self.periodsUntilDeadline = None
+        self.periodsOfChargeRequired = None
+        self.prices = None        
+        self.priceIDs = None
 
     def validate(self):
         logger.info("Validating Dataset")

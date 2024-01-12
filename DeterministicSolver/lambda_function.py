@@ -16,8 +16,9 @@ def handler(event, context):
     logger.info("Lambda Starting")    
 
     ### Load the run ID from the lambda trigger ###    
-    logger.info("Reading Request Data")    
     runID = event['RunID']    
+    logger.info("Reading Request Data for run " + runID)    
+    
     
     model = Deterministic_Optimizer.Deterministic_Model(logger)
 

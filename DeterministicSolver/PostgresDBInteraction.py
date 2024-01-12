@@ -8,11 +8,11 @@ import psycopg2.extras
 
 
 class DeterministicDatasetBuilder():
-    dataset = None
-    logger = None
-    conn = None
+    
     
     def __init__(self, logger) -> None:
+        self.dataset = None    
+        self.conn = None
         self.logger = logger
         
 
@@ -58,25 +58,18 @@ class DeterministicDatasetBuilder():
         with self.conn.cursor() as cur:        
             try:
                 cur.callproc("get_run_config_f", (runID,)) 
-
                 result = cur.fetchall() 
-
                 if(result == None):
                         self.logger.error("Error - no results returned from query")
 
                 i = 0
                 for row in result:
                     i += 1
-
                     if i >= 2:
-                        self.logger.error("Error, multiple result rows returned - run is invalid")
-                        sys.exit() #TODO Correct way to abort run and preserve the lamda for other, correct runs?
-
+                        raise Exception("Error, multiple result rows returned - run is invalid")
 
                     self.dataset.periodsUntilDeadline = row[0]
-                    self.dataset.periodsOfChargeRequired = row[1]
-
-                                                              
+                    self.dataset.periodsOfChargeRequired = row[1]                                                            
                 
                                 
             except (Exception, psycopg2.Error) as e:
@@ -89,6 +82,7 @@ class DeterministicDatasetBuilder():
         with self.conn.cursor() as cur:        
             try:
                 self.dataset.prices = []
+                self.dataset.priceIDs = []
                 # This was done as a stored procedure, rather than a hard coded query, to reduce DB-code coupling. 
                 # Doing it this way lets the DB programmer change the underlying tables in the DB at will, so long as they update the stored procedure to match the changes they make to the tables.
                 
@@ -97,10 +91,10 @@ class DeterministicDatasetBuilder():
                 for row in cur.fetchall():
                     if(prev_period_number == (row[1] - 1) or prev_period_number == -1 ):
                         self.dataset.prices.append(float(row[0]))
-                        prev_period_number = row[1]
-                    else:
-                        self.logger.error("Error, periods are not consecutive, data is missing")
-                        sys.exit() #TODO Correct way to abort run and preserve the lamda for other, correct runs?
+                        prev_period_number = row[1]                                 
+                        self.dataset.priceIDs.append(row[2])
+                    else:                        
+                        raise Exception("Error, periods are not consecutive, data is missing")
                 
                                 
             except (Exception, psycopg2.Error) as e:
@@ -111,12 +105,11 @@ class DeterministicDatasetBuilder():
 
 
 
-class DeterministicSolutionSaver():
-    solution = None
-    logger = None
-    conn = None
+class DeterministicSolutionSaver():    
     
     def __init__(self, logger) -> None:
+        self.solution = None
+        self.conn = None
         self.logger = logger
         psycopg2.extras.register_uuid()
         
@@ -172,17 +165,17 @@ class DeterministicSolutionSaver():
         with self.conn.cursor() as cur:        
             try:
                 #create a list of tuples for insertion
-                chargeDecisionsToInsert = []
+                chargeDecisionsToInsert = []                
                 i = 1
                 for chargeDecision in self.solution.decisions:
-                    chargeDecisionsToInsert.append(chargeDecision)
-                    i = i + 1
-
-                cur.executemany("CALL save_run_decision(%s, %s, %s);", chargeDecisionsToInsert)                 
+                    chargeDecisionsToInsert.append(chargeDecision)                    
+                    i = i + 1               
+                
+                cur.executemany("CALL save_run_decision(%s, %s, %s, %s);", chargeDecisionsToInsert)                 
                 self.conn.commit()
                                 
             except (Exception, psycopg2.Error) as e:
-                self.logger.error("ERROR: Failed to save the charing decisions using run ID " + self.runID)
+                self.logger.error("ERROR: Failed to save the charging decisions using run ID " + self.runID)
                 self.logger.error(e)
                 raise
 
