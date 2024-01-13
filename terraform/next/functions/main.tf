@@ -12,6 +12,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 
+
 # Create IAM execution role for PRSS & PRSL functions
 
 resource "aws_iam_role" "WITS_call_function_role" {
@@ -20,12 +21,15 @@ resource "aws_iam_role" "WITS_call_function_role" {
 }
 
 
+
 # Set policy for role
 
 data "aws_iam_policy_document" "WITS_call_function_policy" {
   statement {
     effect = "Allow"
     actions = [
+      "ecr:BatchGetImage",
+      "ecr:GetDownloadUrlForLayer",
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
@@ -34,6 +38,7 @@ data "aws_iam_policy_document" "WITS_call_function_policy" {
     resources = ["*"]
   }
 }
+
 
 
 # Create policy for role
@@ -45,6 +50,7 @@ resource "aws_iam_policy" "WITS_call_function_policy" {
 }
 
 
+
 # Attach policy to role
 
 resource "aws_iam_role_policy_attachment" "WITS_call_function_attach" {
@@ -53,50 +59,50 @@ resource "aws_iam_role_policy_attachment" "WITS_call_function_attach" {
 }
 
 
+
+# Set ECR repo for function
+
+data "aws_ecr_repository" "prss" {
+  name = "prss"
+}
+
+data "aws_ecr_repository" "prsl" {
+  name = "prsl"
+}
+
+
 # Create PRSS function
 
 resource "aws_lambda_function" "PRSS" {
   function_name = "PRSS"
   package_type  = "Image"
-  image_uri     = "133433735071.dkr.ecr.us-east-1.amazonaws.com/prss:latest"
+  image_uri     = "${data.aws_ecr_repository.prss.repository_url}:latest"
   role          = aws_iam_role.WITS_call_function_role.arn
   handler       = "lambda_function.lambda_handler"
   timeout       = 30
 
   environment {
     variables = {
-      RDS_HOST  = var.rds_host
-      DB_NAME   = var.db_name
-      USER_NAME = var.user_name
-      PASSWORD  = var.password
+      CLIENT_ID = var.client_id
+      CLIENT_SECRET  = var.client_secret
     }
   }
 }
-
 
 # Create PRSL function
 
 resource "aws_lambda_function" "PRSL" {
   function_name = "PRSL"
   package_type  = "Image"
-  image_uri     = "133433735071.dkr.ecr.us-east-1.amazonaws.com/prsl:latest"
+  image_uri     = "${data.aws_ecr_repository.prsl.repository_url}:latest"
   role          = aws_iam_role.WITS_call_function_role.arn
   handler       = "lambda_function.lambda_handler"
   timeout       = 30
 
   environment {
     variables = {
-      RDS_HOST  = var.rds_host
-      DB_NAME   = var.db_name
-      USER_NAME = var.user_name
-      PASSWORD  = var.password
+      CLIENT_ID = var.client_id
+      CLIENT_SECRET  = var.client_secret
     }
   }
 }
-
-
-
-
-
-
-

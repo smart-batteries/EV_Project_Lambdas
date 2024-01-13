@@ -1,4 +1,5 @@
 # Configure Terraform
+
 terraform {
   required_version = ">= 1.2.0"
   required_providers {
@@ -10,10 +11,17 @@ terraform {
 }
 
 
+
 # Configure AWS provider
+
 provider "aws" {
   region = var.aws_region
 }
 
 
-# Configure resources
+
+# Call modules
+
+module "repos" {
+  source = "./repos"
+}

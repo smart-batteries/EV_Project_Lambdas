@@ -1,3 +1,16 @@
+
+variable "client_id" {
+  description = "id for calling the WITS API for electricity price forecasts"
+  type        = string
+  default     = "Nrl6u19da0OKS12Q3L2CeWUW00tBkAmG"
+}
+
+variable "client_secret" {
+  description = "secret for calling the WITS API for electricity price forecasts"
+  type        = string
+  default     = "xWSZfFdOyfMZJp2NHS5twscTMl5SUVdO"
+}
+
 variable "rds_host" {
   description = "RDS host for Lambda functions to connect to"
   type        = string
