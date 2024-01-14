@@ -1,0 +1,163 @@
+<!--
+    Goals/TODO:    
+    - Improve the data input:
+        - Datetime Picker for start and done by times 
+
+    - Use the input data  to request a solve
+        - Use the solve request API
+        - Handle the response and display it on screen
+        - After a wait time, fetch the optimal plan data
+    - Display solve results alongside forecast prices for context
+        - Includes fetching the relevant prices using an  API endpoint
+    - Make this safe to distribute to anyone in some way
+        - Rate limiting the API calls if possible?
+        - 
+
+ -->
+
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="Controls" style="width:100%;height:30%;">       
+          <div id="Left" style="float: left;width: 50%;">
+            <pre>Battery size (kWh):</pre> <input type="text"/ id="kWh"> <br>
+            <pre>Charge rate (kW):  </pre> <input type="text" id="kW"/> <br>
+            <pre>Charge start time: </pre> <input type="text" id="startTime"/> <br>
+            <pre>Charge end time:   </pre> <input type="text" id="endTime"/> <br> <br>
+            <button name="Request Optimal Charging Schedule"> Request Optimal Charging Schedule </button><br> <br>
+            <button name="Refresh Chart">Refresh Chart</button> <br>                
+          </div>
+          <div id="Right" style="float: left;width: 50%;">            
+                <!--Right side:
+                    - Response window for API interaction results
+                -->
+                <div> <p>Results of requests will appear below!</p></div>
+                <div id="Events" style="border-style: dotted; border-width:1px;padding: 3px;width:95%;height:95%"></div>
+          </div>
+          
+
+    </div>
+
+    <div id="Chart" style="width:100%; height:67%; padding-top: 3%;">
+        <canvas id="myChart" style="width:80%; height:80%;"></canvas>
+    </div>
+
+  <script>
+
+    function requestSolve(){
+        //Mocked for now TODO
+        response = ['success', 'dummyRunID']
+        return response
+    }
+
+    function fetchSolveData(runID){
+        //mocked for now TODO
+
+        //call the API for the recommended charge actions TODO
+        chargeDecisions = [1,0,1,0,1,1,0,0]
+        //call the API for the price data TODO
+        prices = [[0.30, 0.45, 0.28, 0.41, 0.32, 0.35, 0.47, 0.39],[1, 2, 3, 4, 5, 6, 7, 8]]
+
+        return [chargeDecisions, prices]        
+    }
+
+    function drawChart(data){
+        chargeDecisions = data[0]
+        prices = data[1][0]
+        labelArray = data[1][1]       
+
+        const ctx = document.getElementById('myChart');
+
+        new Chart(ctx, {        
+        data: {            
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'Charge Decisions (Yes or No)',
+                    data: chargeDecisions,
+                    borderWidth: 1,
+                    yAxisID: 'barAxis'                    
+                },
+                {
+                    type: 'line',
+                    label: 'Forecast Prices ($/kWh)',
+                    data: prices,
+                    borderWidth: 1,                    
+                    yAxisID: 'lineAxis'
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Electricity Prices and Charge Decisions',
+                    font: {size: 24} 
+                }
+            },
+            layout: {
+                padding: {
+                    left: 10,
+                    right:10
+                }
+            },
+            scales: { 
+                'xAxis': {
+                    type: 'category',
+                    labels: labelArray,
+                    title: {
+                            display: true,
+                            text: "Time Periods (30 minute windows)",
+                            font: {size: 18}                        
+                        },
+                    offset:true
+                    
+                },
+                'lineAxis' :{       
+                        title: {
+                            display: true,
+                            text: "Power Price ($ per kWh)",
+                            font: {size: 18}
+                        },
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        min: 0,
+                        max: 0.5,
+                        ticks: {
+                            // Include a dollar sign in the ticks
+                            callback: function(value, index, ticks) {
+                                return '$' + value;
+                            }
+                        }
+                    },
+                    'barAxis': {                        
+                        type: 'linear',
+                        display: false,
+                        position: 'right',
+                        min: 0,
+                        max: 3,
+
+                        // grid line settings
+                        grid: {
+                        drawOnChartArea: false, // only want the grid lines for one axis to show up
+                        },
+                    },
+            }
+        }
+    });
+    }
+
+    function redrawChart(){
+        //TODO
+    }
+
+    data = fetchSolveData("MockRunID")
+    drawChart(data);
+  
+    
+  </script>
+
+</body>
