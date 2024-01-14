@@ -40,12 +40,12 @@ def lambda_handler(event, context):
             print('queryStringParameters:', json.dumps(event['queryStringParameters']))
             
             user_input = event['queryStringParameters']
-            expected_input = ('start_time', 'end_time', 'kwh_to_charge', 'kw_charge_rate', 'node')
+            expected_input = ('start', 'end', 'kwh', 'kw', 'node')
             if all(key in user_input for key in expected_input):
-                start_time = datetime.strptime(user_input.get('start_time'), '%Y-%m-%d %H:%M:%S')
-                end_time = datetime.strptime(user_input.get('end_time'), '%Y-%m-%d %H:%M:%S')
-                kwh_to_charge = float(user_input.get('kwh_to_charge'))
-                kw_charge_rate = float(user_input.get('kw_charge_rate'))
+                start_time = datetime.strptime(user_input.get('start'), '%Y-%m-%d %H:%M:%S')
+                end_time = datetime.strptime(user_input.get('end'), '%Y-%m-%d %H:%M:%S')
+                kwh_to_charge = float(user_input.get('kwh'))
+                kw_charge_rate = float(user_input.get('kw'))
                 node = user_input.get('node')
                 logger.info("Successfully extracted user input data.")
             else:
