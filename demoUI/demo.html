@@ -1,7 +1,7 @@
 <!--
     Goals/TODO:    
     - Improve the data input:
-        - Datetime Picker for start and done by times 
+        - Make sure the date formats match
 
     - Use the input data  to request a solve
         - Use the solve request API
@@ -17,16 +17,21 @@
 
 
 <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div id="Controls" style="width:100%;height:30%;">       
           <div id="Left" style="float: left;width: 50%;">
-            <pre>Battery size (kWh):</pre> <input type="text"/ id="kWh"> <br>
+            <pre>Wholesale Grid Node:</pre> <select type="text" id="node">
+                <option value="KBY0662">KBY0662</option>
+            </select><br>
+            <pre>Battery size (kWh):</pre> <input type="text" id="kWh"> <br>
             <pre>Charge rate (kW):  </pre> <input type="text" id="kW"/> <br>
             <pre>Charge start time: </pre> <input type="text" id="startTime"/> <br>
             <pre>Charge end time:   </pre> <input type="text" id="endTime"/> <br> <br>
-            <button name="Request Optimal Charging Schedule"> Request Optimal Charging Schedule </button><br> <br>
+            <button name="Request Optimal Charging Schedule" onclick="requestSolve();"> Request Optimal Charging Schedule </button><br> <br>
             <button name="Refresh Chart">Refresh Chart</button> <br>                
           </div>
           <div id="Right" style="float: left;width: 50%;">            
@@ -46,13 +51,53 @@
 
   <script>
 
-    function requestSolve(){
-        //Mocked for now TODO
-        response = ['success', 'dummyRunID']
-        return response
+    now = new Date()
+    lastAllowedStart = new Date(now.getTime() + 71*60*60*1000);    
+    lastAllowedEnd = new Date(now.getTime() + 72*60*60*1000);    
+
+    flatpickr("#startTime", {
+        enableTime: true,        
+        minuteIncrement: 30,
+        minDate: now,
+        maxDate: lastAllowedStart
+
+    });
+    flatpickr("#endTime", {
+        enableTime: true,        
+        minuteIncrement: 30,
+        minDate: now,
+        maxDate: lastAllowedEnd
+    });
+
+    async function requestSolve(){
+        node = document.getElementById('node').value
+        kWh = document.getElementById('kWh').value
+        kW = document.getElementById('kW').value
+        start_time = document.getElementById('startTime').value + ":00"
+        end_time = document.getElementById('endTime').value + ":00"
+
+        requestURL = "https://jivdrcog3m.execute-api.us-east-1.amazonaws.com/charging_schedule?start=" + start_time + "&end=" + end_time + "&kwh=" + kWh + "&kw=" + kW + "&node=" + node;
+        
+        let response = await fetch(requestURL)
+        let data = await response.json()
+        console.log(data)
+        return data //TODO
     }
 
-    function fetchSolveData(runID){
+    async function fetchSolveData(runID){
+        //TODO update URL
+        requestURL = "https://jivdrcog3m.execute-api.us-east-1.amazonaws.com/charging_schedule?runID=" + runID;
+        
+        let response = await fetch(requestURL)
+        let data = await response.json()
+        console.log(data)
+        
+
+
+        return [data.chargeDecisions, data.prices]        
+    }   
+
+    function fetchDummySolveData(runID){
         //mocked for now TODO
 
         //call the API for the recommended charge actions TODO
@@ -148,13 +193,20 @@
             }
         }
     });
+    }    
+
+    async function solveAndGetData(){
+        let data = requestSolve();
+
+        //TODO add a delay here for the solve to finish
+        let graph_data =  fetchSolveData(data.runID);
+
+        drawChart(graph_data);
     }
 
-    function redrawChart(){
-        //TODO
-    }
 
-    data = fetchSolveData("MockRunID")
+    //Do the thing
+    data = fetchDummySolveData("MockRunID")
     drawChart(data);
   
     
