@@ -35,33 +35,33 @@ resource "aws_subnet" "subnet_5" {
 
 resource "aws_subnet" "subnet_6" {
   vpc_id     = aws_vpc.vpc_main.id
-  security_groups = "10.0.6.0/24"
+  cidr_block = "10.0.6.0/24"
 }
 
 # Create security groups
 
 resource "aws_security_group" "lambda_to_rds" {
   name        = "lambda_to_rds"
-  description = "Security group attached to Lambda function to allow them to securely connect to db"
+  description = "Security group attached to Lambda functions, so other security groups can refer to it, to allow connection to RDS"
   vpc_id      = aws_vpc.vpc_main.id
 
   egress {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    security_groups = aws_security_group.rds_to_lambda.id
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
 resource "aws_security_group" "rds_to_lambda" {
   name        = "rds_to_lambda"
-  description = "Security group attached to RDS to allow Lambda functions to connect to db"
+  description = "Security group attached to RDS, to allow connections from Lambda functions to the database"
   vpc_id      = aws_vpc.vpc_main.id
 
   ingress {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    security_groups = aws_security_group.lambda_to_rds.id
+    security_groups = [aws_security_group.lambda_to_rds.id]
   }
 }

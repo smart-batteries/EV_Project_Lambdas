@@ -20,7 +20,7 @@ schedule_call_offset_url = "https://api.electricityinfo.co.nz/api/market-prices/
 sqs = boto3.client('sqs')
 
 # Set variables for sending call results to sqs queue
-queue_url = "https://sqs.us-east-1.amazonaws.com/133433735071/extracted"
+queue_url = os.environ['QUEUE_URL']
 message_attributes = {
   'source': {
     'DataType': 'String',

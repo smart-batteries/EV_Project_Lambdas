@@ -22,8 +22,8 @@ provider "aws" {
 
 # Call modules
 
-module "repos" {
-  source = "./repos"
+module "repos_logs" {
+  source = "./repos_logs"
 }
 
 

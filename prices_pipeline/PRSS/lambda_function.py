@@ -12,7 +12,7 @@ schedule_auth_url = "https://api.electricityinfo.co.nz/login/oauth2/token"
 schedule_call_url = "https://api.electricityinfo.co.nz/api/market-prices/v1/schedules/PRSS/prices?marketType=E&forward=8"
 
 # Set variables for sending call results to sqs queue
-queue_url = "https://sqs.us-east-1.amazonaws.com/133433735071/extracted"
+queue_url = os.environ['QUEUE_URL']
 message_attributes = {
   'source': {
     'DataType': 'String',
