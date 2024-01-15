@@ -26,6 +26,37 @@ module "network" {
   source = "./network"
 }
 
+module "schedules" {
+  source = "./schedules"
+}
+
 module "functions" {
   source = "./functions"
+
+  depends_on = [module.schedules]
+  prss_schedule_name = module.schedules.prss_schedule_name
+  prsl_schedule_name = module.schedules.prsl_schedule_name
+  purge_schedule_name = module.schedules.purge_schedule_name
 }
+
+module "queue" {
+  source = "./queue"
+
+  depends_on = [module.functions]
+  prss_arn = module.functions.prss_arn
+  prsl_arn = module.functions.prsl_arn
+  merge_arn = module.functions.merge_arn
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

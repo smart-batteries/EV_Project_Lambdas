@@ -3,9 +3,3 @@ variable "aws_region" {
   type        = string
   default     = "eu-north-1"
 }
-
-
-variable "names" {
-  type    = list(string)
-  default = ["prss", "prsl"]
-}

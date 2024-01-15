@@ -1,0 +1,6 @@
+client_id     = "Nrl6u19da0OKS12Q3L2CeWUW00tBkAmG"
+client_secret = "xWSZfFdOyfMZJp2NHS5twscTMl5SUVdO"
+rds_host      = "db-instance.caseq5rlslmk.us-east-1.rds.amazonaws.com"
+db_name       = "db1"
+user_name     = "postgres"
+password      = ">%7T&]pq8WNG9%3s"
