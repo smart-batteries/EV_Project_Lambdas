@@ -26,6 +26,11 @@ module "roles" {
   source = "./roles"
 }
 
+module "queue" {
+  source = "./queue"
+}
+
+
 module "schedules" {
   source = "./schedules"
 }
@@ -45,11 +50,6 @@ module "database" {
   subnet_5_id = module.network.subnet_3_id
   subnet_6_id = module.network.subnet_4_id
   rds_to_lambda_id = module.network.rds_to_lambda_id
-}
-
-
-module "queue" {
-  source = "./queue"
 }
 
 

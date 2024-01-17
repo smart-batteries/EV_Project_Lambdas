@@ -26,9 +26,9 @@ jobs:
         id: updated-images
         run: |
           UPDATED=$(git diff --name-only HEAD^ HEAD)
-          UPDATED_PIPELINE_IMAGES=$(echo "$UPDATED" | grep -o '+_pipeline/[^/]\+/' | uniq)
-          UPDATED_SOLVER_IMAGES=$(echo "$UPDATED" | grep -o '+_olver/' | uniq)
-          UPDATED_IMAGES="$UPDATED_PIPELINE_IMAGES $UPDATED_SOLVER_IMAGES"
+          UPDATED_PIPELINE=$(echo "$UPDATED" | grep "pipeline" | sed "s/\/lambda_function.py//g" | sort | uniq)
+          UPDATED_SOLVER=$(echo "$UPDATED" | grep "olver" | sed "s/\/lambda_function.py//g" | sort | uniq)
+          UPDATED_IMAGES="$UPDATED_PIPELINE"$'\n'"$UPDATED_SOLVER"
           
           if [ -n "$UPDATED_IMAGES" ]; then
             echo "These images have been updated:"
@@ -57,7 +57,6 @@ jobs:
         run: |
           # Iterate over each updated Docker image
           IFS=$'\n' # Set the internal field separator to newline
-          ############# this assumes each path in UPDATED_IMAGES is on a new line
           ########### do i need to add ${{ github.workspace }}/ for the root dir at the start of each path in UPDATED_IMAGES variable?
           
           for PATH in $UPDATED_IMAGES; do
@@ -88,10 +87,8 @@ jobs:
         run: |
           # Iterate for each updated Docker image
           IFS=$'\n' # Set the internal field separator to newline
-          ######### this assumes each path in UPDATED_IMAGES is on a new line
           ########### do i need to add ${{ github.workspace }}/ for the root dir at the start of each path in UPDATED_IMAGES variable?
 
-          ######## does the aws isa user have the credentials to update lambda functions?
           for PATH in $UPDATED_IMAGES; do
             # Update Lambda function with the latest ECR image
             aws lambda update-function-code \
