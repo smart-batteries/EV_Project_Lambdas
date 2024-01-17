@@ -5,7 +5,6 @@ resource "aws_vpc" "vpc_main" {
   cidr_block = "10.0.0.0/16"
 }
 
-
 # Create subnets
 
 resource "aws_subnet" "subnet_1" {

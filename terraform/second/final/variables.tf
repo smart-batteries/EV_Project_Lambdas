@@ -30,4 +30,20 @@ variable "merge_arn" {
   description = "ARN of the Merge function"
 }
 
+variable "log_request_arn" {
+  type        = string
+  description = "ARN of the log_request function"
+}
+
+variable "log_request_name" {
+  type        = string
+  description = "Name of the log_request function"
+}
+
+variable "log_request_invoke_arn" {
+  type        = string
+  description = "ARN for invoking the log_request function from API Gateway"
+}
+
+
 

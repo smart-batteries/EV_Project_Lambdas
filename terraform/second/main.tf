@@ -91,14 +91,9 @@ module "final" {
   prss_arn = module.functions.prss_arn
   prsl_arn = module.functions.prsl_arn
   merge_arn = module.functions.merge_arn
+  log_request_arn = module.functions.log_request_arn
+  log_request_name = module.functions.log_request_name
+  log_request_invoke_arn = module.functions.log_request_invoke_arn
 }
-
-
-
-
-
-
-
-
 
 
