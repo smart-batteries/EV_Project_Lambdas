@@ -1,5 +1,3 @@
-
-
 # Set ECR repos for the functions
 
 data "aws_ecr_repository" "prss" {
@@ -23,9 +21,9 @@ data "aws_ecr_repository" "create_problem" {
 data "aws_ecr_repository" "get_prices" {
   name = "get_prices"
 }
-
-
-
+data "aws_ecr_repository" "solver" {
+  name = "solver"
+}
 
 
 
@@ -83,10 +81,6 @@ resource "aws_cloudwatch_event_target" "trigger_prsl_function" {
 
 
 
-
-
-
-
 # Create Merge function
 
 resource "aws_lambda_function" "merge" {
@@ -97,7 +91,7 @@ resource "aws_lambda_function" "merge" {
   timeout       = 30
 
   vpc_config {
-    subnet_ids = [ var.subnet_1_id, var.subnet_2_id ]
+    subnet_ids = var.list_subnet_ids
     security_group_ids = [ var.lambda_to_rds_id ]
   }
 
@@ -121,7 +115,7 @@ resource "aws_lambda_function" "purge" {
   timeout       = 30
 
   vpc_config {
-    subnet_ids = [ var.subnet_1_id, var.subnet_2_id ]
+    subnet_ids = var.list_subnet_ids
     security_group_ids = [ var.lambda_to_rds_id ]
   }
 
@@ -146,10 +140,6 @@ resource "aws_cloudwatch_event_target" "trigger_purge_function" {
 
 
 
-
-
-
-
 # Create log_request function
 
 resource "aws_lambda_function" "log_request" {
@@ -160,7 +150,7 @@ resource "aws_lambda_function" "log_request" {
   timeout       = 30
 
   vpc_config {
-    subnet_ids = [ var.subnet_3_id, var.subnet_4_id ]
+    subnet_ids = var.list_subnet_ids
     security_group_ids = [ var.lambda_to_rds_id ]
   }
 
@@ -184,7 +174,7 @@ resource "aws_lambda_function" "create_problem" {
   timeout       = 30
 
   vpc_config {
-    subnet_ids = [ var.subnet_3_id, var.subnet_4_id ]
+    subnet_ids = var.list_subnet_ids
     security_group_ids = [ var.lambda_to_rds_id ]
   }
 
@@ -208,7 +198,7 @@ resource "aws_lambda_function" "get_prices" {
   timeout       = 30
 
   vpc_config {
-    subnet_ids = [ var.subnet_3_id, var.subnet_4_id ]
+    subnet_ids = var.list_subnet_ids
     security_group_ids = [ var.lambda_to_rds_id ]
   }
 
@@ -221,6 +211,32 @@ resource "aws_lambda_function" "get_prices" {
     }
   }
 }
+
+
+# Create solver function
+
+resource "aws_lambda_function" "solver" {
+  function_name = "solver"
+  package_type  = "Image"
+  image_uri     = "${data.aws_ecr_repository.solver.repository_url}:latest"
+  role          = var.lambda_role_arn
+  timeout       = 30
+
+  vpc_config {
+    subnet_ids = var.list_subnet_ids
+    security_group_ids = [ var.lambda_to_rds_id ]
+  }
+
+  environment {
+    variables = {
+      RDS_HOST  = var.rds_host
+      DB_NAME  = var.db_name
+      USER_NAME  = var.username
+      PASSWORD  = var.password
+    }
+  }
+}
+
 
 
 

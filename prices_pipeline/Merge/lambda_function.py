@@ -59,11 +59,11 @@ def lambda_handler(event, context):
             try:
                 for forecast in price_forecasts:
                     cur.callproc(
-                        "insert_stage",
+                        "merge_insert_stage",
                         (
+                            forecast['node'],
                             forecast['tradingDateTime'],
                             forecast['tradingPeriod'],
-                            forecast['node'],
                             forecast['price'],
                             forecast['lastRunTime'],
                             forecast['schedule']

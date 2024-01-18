@@ -18,6 +18,7 @@ provider "aws" {
 }
 
 
+
 # Create ECR repos on AWS
 
 resource "aws_ecr_repository" "repos" {
@@ -31,6 +32,8 @@ resource "aws_ecr_repository" "repos" {
   }
 }
 
+
+
 # Create CloudWatch log groups for each lambda function
 
 resource "aws_cloudwatch_log_group" "function_logs" {
@@ -41,6 +44,13 @@ resource "aws_cloudwatch_log_group" "function_logs" {
 }
 
 
+
+# Create CloudWatch log group for the state machine
+
+resource "aws_cloudwatch_log_group" "problems_pipeline_state_machine" {
+  name                 = "/aws/vendedlogs/states/problems_pipeline_state_machine"
+  retention_in_days    = 0
+}
 
 
 

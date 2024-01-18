@@ -11,3 +11,8 @@ output "merge_role_arn" {
 output "lambda_role_arn" {
   value = aws_iam_role.lambda_execution_role.arn
 }
+
+output "state_machine_role_arn" {
+  value = aws_iam_role.state_machine_execution_role.arn
+}
+

@@ -30,28 +30,26 @@ module "queue" {
   source = "./queue"
 }
 
-
 module "schedules" {
   source = "./schedules"
 }
 
 module "network" {
-  source = "./network"
+  source       = "./network"
+  home_address = var.root_home_address
 }
 
 module "database" {
-  source = "./database"
+  source     = "./database"
   depends_on = [module.network]
 
-  subnet_1_id = module.network.subnet_1_id
-  subnet_2_id = module.network.subnet_2_id
-  subnet_3_id = module.network.subnet_3_id
-  subnet_4_id = module.network.subnet_4_id
-  subnet_5_id = module.network.subnet_3_id
-  subnet_6_id = module.network.subnet_4_id
-  rds_to_lambda_id = module.network.rds_to_lambda_id
-}
+  db_username = var.root_db_username
+  db_password = var.root_db_password
 
+  list_subnet_ids = module.network.list_subnet_ids
+  rds_to_lambda_id = module.network.rds_to_lambda_id
+  connect_to_rds_id = module.network.connect_to_rds_id
+}
 
 module "functions" {
   source = "./functions"
@@ -61,18 +59,15 @@ module "functions" {
   merge_role_arn = module.roles.merge_role_arn
   lambda_role_arn = module.roles.lambda_role_arn
 
+  client_id = var.root_client_id
+  client_secret = var.root_client_secret
   queue_url = module.queue.queue_url
 
   prss_schedule_name = module.schedules.prss_schedule_name
   prsl_schedule_name = module.schedules.prsl_schedule_name
   purge_schedule_name = module.schedules.purge_schedule_name
 
-  subnet_1_id = module.network.subnet_1_id
-  subnet_2_id = module.network.subnet_2_id
-  subnet_3_id = module.network.subnet_3_id
-  subnet_4_id = module.network.subnet_4_id
-  subnet_5_id = module.network.subnet_5_id
-  subnet_6_id = module.network.subnet_6_id
+  list_subnet_ids = module.network.list_subnet_ids
   lambda_to_rds_id = module.network.lambda_to_rds_id
 
   rds_host = module.database.rds_host
@@ -94,6 +89,11 @@ module "final" {
   log_request_arn = module.functions.log_request_arn
   log_request_name = module.functions.log_request_name
   log_request_invoke_arn = module.functions.log_request_invoke_arn
+  create_problem_arn = module.functions.create_problem_arn
+  get_prices_arn = module.functions.get_prices_arn
+  solver_arn = module.functions.solver_arn
+
+  state_machine_role_arn = module.roles.state_machine_role_arn
 }
 
 

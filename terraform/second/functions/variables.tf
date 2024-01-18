@@ -18,18 +18,14 @@ variable "lambda_role_arn" {
 
 
 
-# Environmental variables to be added to functions that call the WITS API: PRSS & PRSL
+# Variables from root variables file, to be added to functions as environmental variables
 
 variable "client_id" {
-  description = "id for calling the WITS API for electricity price forecasts"
   type        = string
-  default     = "Nrl6u19da0OKS12Q3L2CeWUW00tBkAmG"
 }
 
 variable "client_secret" {
-  description = "secret for calling the WITS API for electricity price forecasts"
   type        = string
-  default     = "xWSZfFdOyfMZJp2NHS5twscTMl5SUVdO"
 }
 
 # Output from the queue module
@@ -64,34 +60,9 @@ variable "purge_schedule_name" {
 
 # Output from the network module
 
-variable "subnet_1_id" {
-  description = "Subnet 1"
-  type        = string
-}
-
-variable "subnet_2_id" {
-  description = "Subnet 2"
-  type        = string
-}
-
-variable "subnet_3_id" {
-  description = "Subnet 3"
-  type        = string
-}
-
-variable "subnet_4_id" {
-  description = "Subnet 4"
-  type        = string
-}
-
-variable "subnet_5_id" {
-  description = "Subnet 5"
-  type        = string
-}
-
-variable "subnet_6_id" {
-  description = "Subnet 6"
-  type        = string
+variable "list_subnet_ids" {
+  description = "List of default subnets"
+  type        = list(string)
 }
 
 variable "lambda_to_rds_id" {

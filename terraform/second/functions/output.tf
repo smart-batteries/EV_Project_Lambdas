@@ -22,5 +22,16 @@ output "log_request_invoke_arn" {
   value = aws_lambda_function.log_request.invoke_arn
 }
 
+output "create_problem_arn" {
+  value = aws_lambda_function.create_problem.arn
+}
+
+output "get_prices_arn" {
+  value = aws_lambda_function.get_prices.arn
+}
+
+output "solver_arn" {
+  value = aws_lambda_function.solver.arn
+}
 
 

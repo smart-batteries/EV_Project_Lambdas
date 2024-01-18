@@ -11,6 +11,18 @@ data "aws_iam_policy_document" "lambda_assume_role" {
   }
 }
 
+# Allows Step Functions to assume an IAM role
+
+data "aws_iam_policy_document" "step_func_assume_role" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["states.amazonaws.com"]
+    }
+  }
+}
 
 
 
@@ -59,8 +71,6 @@ resource "aws_iam_role_policy_attachment" "attach_wits_policy" {
 
 
 
-
-
 # Create IAM execution role for Merge function
 
 resource "aws_iam_role" "merge_execution_role" {
@@ -82,7 +92,9 @@ data "aws_iam_policy_document" "merge_permissions" {
       "ec2:CreateNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DeleteNetworkInterface",
+      "ec2:DescribeVpcs",
       "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
       "ec2:AssignPrivateIpAddresses",
       "ec2:UnassignPrivateIpAddresses",
       "sqs:GetQueueAttributes",
@@ -113,10 +125,6 @@ resource "aws_iam_role_policy_attachment" "attach_merge_policy" {
 
 
 
-
-
-
-
 # Create an IAM execution role for the other lambda functions
 
 resource "aws_iam_role" "lambda_execution_role" {
@@ -124,7 +132,7 @@ resource "aws_iam_role" "lambda_execution_role" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-# Set permissions policy for the lambda execution role
+# Set permissions policy for the execution role
 
 data "aws_iam_policy_document" "lambda_permissions" {
   statement {
@@ -138,7 +146,9 @@ data "aws_iam_policy_document" "lambda_permissions" {
       "ec2:CreateNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DeleteNetworkInterface",
+      "ec2:DescribeVpcs",
       "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
       "ec2:AssignPrivateIpAddresses",
       "ec2:UnassignPrivateIpAddresses"
     ]
@@ -146,7 +156,7 @@ data "aws_iam_policy_document" "lambda_permissions" {
   }
 }
 
-# Create permissions policy for the lambda execution role
+# Create permissions policy for the execution role
 
 resource "aws_iam_policy" "lambda_policy" {
   name        = "lambda_policy"
@@ -154,11 +164,64 @@ resource "aws_iam_policy" "lambda_policy" {
   policy      = data.aws_iam_policy_document.lambda_permissions.json
 }
 
-# Attach permissions policy to lambda execution role
+# Attach permissions policy to execution role
 
 resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   role       = aws_iam_role.lambda_execution_role.name
   policy_arn = aws_iam_policy.lambda_policy.arn
 }
+
+
+
+
+
+# Create an IAM execution role for the Step Functions state machine
+
+resource "aws_iam_role" "state_machine_execution_role" {
+  name               = "state_machine_execution_role"
+  assume_role_policy = data.aws_iam_policy_document.step_func_assume_role.json
+}
+
+# Set permissions policy for the state machine's role
+
+data "aws_iam_policy_document" "state_machine_permissions" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:CreateLogDelivery",
+      "logs:ListLogDeliveries",
+      "logs:GetLogDelivery",
+      "logs:UpdateLogDelivery",
+      "logs:DeleteLogDelivery",
+      "logs:PutResourcePolicy",
+      "logs:DescribeResourcePolicies",
+      "logs:DescribeLogGroups",
+      "lambda:InvokeFunction"
+    ]
+    resources = ["*"]
+  }
+}
+
+# Create permissions policy for the execution role
+
+resource "aws_iam_policy" "state_machine_policy" {
+  name        = "state_machine_policy"
+  description = "Policy for the state machine to invoke the lambda functions of the problems pipeline"
+  policy      = data.aws_iam_policy_document.state_machine_permissions.json
+}
+
+# Attach permissions policy to execution role
+
+resource "aws_iam_role_policy_attachment" "attach_state_machine_policy" {
+  role       = aws_iam_role.state_machine_execution_role.name
+  policy_arn = aws_iam_policy.state_machine_policy.arn
+}
+
+
+
+
 
 
