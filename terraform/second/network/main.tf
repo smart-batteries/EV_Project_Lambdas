@@ -1,4 +1,4 @@
-# Fetch default VPC & subnets
+# Fetch default VPC, subnets & security group
 
 data "aws_vpc" "default" {
   default = true

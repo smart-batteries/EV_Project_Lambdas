@@ -13,11 +13,6 @@ variable "db_password" {
 
 # Output from the network module
 
-variable "list_subnet_ids" {
-  description = "List of default subnets"
-  type        = list(string)
-}
-
 variable "rds_to_lambda_id" {
   description = "Security group attached to RDS, to allow connections from Lambda functions to the database"
   type        = string

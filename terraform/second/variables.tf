@@ -7,30 +7,35 @@ variable "aws_region" {
 variable "root_home_address" {
   description = "IP address of your home network (or wherever you want to connect to the RDS instance from)"
   type        = string
-  default     = ""
+  default     = "202.138.37.42/32"
+  sensitive   = true
 }
 
 variable "root_db_username" {
   description = "username for accessing the RDS instance"
   type        = string
-  default     = ""
+  default     = "dbuser"
+  sensitive   = true
 }
 
 variable "root_db_password" {
   description = "password for accessing the RDS instance"
   type        = string
-  default     = ""
+  default     = "czEFgTb.()6C0SMm"
+  sensitive   = true
 }
 
 variable "root_client_id" {
   description = "id for calling the WITS API for electricity price forecasts"
   type        = string
-  default     = ""
+  default     = "Nrl6u19da0OKS12Q3L2CeWUW00tBkAmG"
+  sensitive   = true
 }
 
 variable "root_client_secret" {
   description = "secret for calling the WITS API for electricity price forecasts"
   type        = string
-  default     = ""
+  default     = "xWSZfFdOyfMZJp2NHS5twscTMl5SUVdO"
+  sensitive   = true
 }
 

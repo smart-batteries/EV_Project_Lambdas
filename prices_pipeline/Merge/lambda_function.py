@@ -1,7 +1,7 @@
 import os
 import logging
 import sys
-import psycopg
+import psycopg2
 import json
 
 # db connection settings
@@ -16,9 +16,9 @@ logger.setLevel(logging.INFO)
 
 # Establish a connection to the database
 try:
-    conn = psycopg.connect(host=host, dbname=dbname, user=user, password=password, connect_timeout=10)
+    conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, connect_timeout=10)
     logging.info("Successfully connected to PostgreSQL.")
-except (Exception, psycopg.Error) as e:
+except (Exception, psycopg2.Error) as e:
     logger.error("ERROR: Failed to connect to PostgreSQL.")
     logger.error(e)
     sys.exit()
@@ -32,7 +32,7 @@ with conn.cursor() as cur:
         conn.commit()
         logger.info("Successfully created staging table in database.")
 
-    except (Exception, psycopg.Error) as e:
+    except (Exception, psycopg2.Error) as e:
         logger.error("ERROR: Failed to create staging table in database.")
         logger.error(e)
         sys.exit()
@@ -72,7 +72,7 @@ def lambda_handler(event, context):
                     conn.commit()
                 logger.info(f"Successfully inserted price data into staging table, for forecast time: {time_of_forecast}.")
                 
-            except (Exception, psycopg.Error) as e:
+            except (Exception, psycopg2.Error) as e:
                 logger.error("ERROR: Failed to insert price data into staging table.")
                 logger.error(e)
                 sys.exit()
@@ -85,7 +85,7 @@ def lambda_handler(event, context):
                 conn.commit()
                 logger.info(f"Successfully merged price data into primary table, for time of forecast: {time_of_forecast}.")
             
-            except (Exception, psycopg.Error) as e:
+            except (Exception, psycopg2.Error) as e:
                 logger.error(f"ERROR: Failed to merge price data into primary table, for time of forecast: {time_of_forecast}.")
                 logger.error(e)
                 sys.exit()

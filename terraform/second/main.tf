@@ -46,7 +46,6 @@ module "database" {
   db_username = var.root_db_username
   db_password = var.root_db_password
 
-  list_subnet_ids = module.network.list_subnet_ids
   rds_to_lambda_id = module.network.rds_to_lambda_id
   connect_to_rds_id = module.network.connect_to_rds_id
 }

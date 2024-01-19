@@ -1,8 +1,8 @@
 import os
 import logging
 import sys
-import psycopg
-from uuid import uuid4
+import psycopg2
+# from uuid import uuid4
 
 # db connection settings
 host = os.environ['RDS_HOST']
@@ -16,16 +16,29 @@ logger.setLevel(logging.INFO)
 
 # Connect to the database
 try:
-    conn = psycopg.connect(host=host, dbname=dbname, user=user, password=password, connect_timeout=10)
+    conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, connect_timeout=10)
     logging.info("Successfully connected to PostgreSQL.")
     
-except (Exception, psycopg.Error) as e:
+except (Exception, psycopg2.Error) as e:
     logger.error("ERROR: Failed to connect to PostgreSQL.")
     logger.error(e)
     sys.exit()
 
 
 def lambda_handler(event, context):
+
+    
+'''
+
+
+# model's output is stored in the opt_run_decisions table
+
+# user sends the run_id to the api gateway
+# function is invoked
+# from opt_run_decisions table, for the run_id, get each price_id and decision_value
+# join to price_forecasts table, for each price_id, get the corresponding datetime & price
+
+
 
     prob_id = event['prob_id']
     
@@ -80,3 +93,6 @@ def lambda_handler(event, context):
         return {
             "run_id": str(uuid4())
         }
+
+
+'''
