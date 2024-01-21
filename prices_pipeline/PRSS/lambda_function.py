@@ -5,13 +5,13 @@ import requests
 import json
 import boto3
 
-# Set variables for schedule call
+# Set variables to call WITS API for forecast data
 client_id = os.environ['CLIENT_ID']
 client_secret = os.environ['CLIENT_SECRET']
 schedule_auth_url = "https://api.electricityinfo.co.nz/login/oauth2/token"
 schedule_call_url = "https://api.electricityinfo.co.nz/api/market-prices/v1/schedules/PRSS/prices?marketType=E&forward=8"
 
-# Set variables for sending call results to sqs queue
+# Set variables to send forecast data to SQS queue
 queue_url = os.environ['QUEUE_URL']
 message_attributes = {
   'source': {

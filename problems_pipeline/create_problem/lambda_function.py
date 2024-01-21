@@ -2,6 +2,7 @@ import os
 import logging
 import sys
 import psycopg2
+from datetime import datetime
 
 # db connection settings
 host = os.environ['RDS_HOST']
@@ -16,7 +17,7 @@ logger.setLevel(logging.INFO)
 # Connect to the database
 try:
     conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, connect_timeout=10)
-    logging.info("Successfully connected to PostgreSQL.")
+    logging.info(f"Successfully connected to {dbname} database at {host}.")
 except (Exception, psycopg2.Error) as e:
     logger.error("ERROR: Failed to connect to PostgreSQL.")
     logger.error(e)
@@ -24,30 +25,37 @@ except (Exception, psycopg2.Error) as e:
 
 
 def lambda_handler(event, context):
-    
+
     request_id = event['request_id']
-    
+
     with conn.cursor() as cur:
-        
+
         # Extract values from opt_requests table for the given request_id
         try:
             cur.callproc(extract_opt_request, [request_id])
             request = cur.fetchone()
             start_time, end_time, kwh_to_charge, kw_charge_rate = request
             logger.info(f"Successfully extracted user data from opt_requests table, for request_id: {request_id}.")
-
+    
         except Exception as e:
             logger.error(f"ERROR: Failed to extract user data from opt_requests table, for request_id: {request_id}.")
             logger.error(e)
             sys.exit()
+    
+        # Transform into values to insert into opt_problems table
+        try:
+            start_rounded = round_time_up(start_time)
+            end_rounded = round_time_down(end_time)
+            periods_until_deadline = int((end_rounded - start_rounded).total_seconds() / 1800) # 1800 seconds per half-hour interval
+            periods_of_charge_required = int(kwh_to_charge / kw_charge_rate * 2)
+            logger.info(f"Successfully transformed user data into inputs for the model, for request_id: {request_id}.")
+            
+        except Exception as e:
+            logger.error(f"ERROR: Failed to transform user data, for request_id: {request_id}.")
+            logger.error(e)
+            sys.exit()
 
-        # Calculate values to insert into opt_problems table
-        start_rounded = round_time_up(start_time)
-        end_rounded = round_time_down(end_time)
-        periods_until_deadline = int((end_rounded - start_rounded).total_seconds() / 1800) # 1800 seconds per half-hour interval
-        periods_of_charge_required = kwh_to_charge / kw_charge_rate * 2
-        
-        # Insert calculated values into opt_problems table
+        # Insert transformed values into opt_problems table, generating the optimisation problem
         try:
             cur.callproc(
                 "insert_opt_problem",
@@ -57,19 +65,17 @@ def lambda_handler(event, context):
                     periods_of_charge_required
                 )
             )
+            
             conn.commit()
             prob_id = cur.fetchone()[0]
             logger.info(f"Successfully created an optimisation problem in opt_problems table, with the problem id: {prob_id}.")
+            logger.info("End.")
             
         except Exception as e:
             logger.error("ERROR: Failed to create an optimisation problem in opt_problems table.")
             logger.error(e)
             sys.exit()
 
-        # Return problem id, to pass as input to the downstream function
-        return {
-            "prob_id": str(prob_id)
-        }
 
 def round_time_up(dt):
     if dt.minute < 30:

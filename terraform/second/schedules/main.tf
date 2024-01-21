@@ -6,7 +6,7 @@ data "aws_iam_policy_document" "scheduler_assume_role" {
     actions = ["sts:AssumeRole"]
     principals {
       type        = "Service"
-      identifiers = ["events.amazonaws.com"]
+      identifiers = ["scheduler.amazonaws.com"]
     }
   }
 }
@@ -53,34 +53,64 @@ resource "aws_iam_role_policy_attachment" "scheduler_role_policy_attach" {
 
 
 
-
-
-
-
 # Create schedules that will trigger PRSS, PRSL, Purge functions
 
-resource "aws_cloudwatch_event_rule" "prss_schedule" {
-  name        = "prss_schedule"
-  description = "Triggers call to WITS API for PRSS, every 30 min"
 
-  role_arn = aws_iam_role.scheduler_role.arn
-  schedule_expression = "cron(5,35 * * * ? *)"
+resource "aws_scheduler_schedule" "prss_schedule" {
+  name       = "prss_schedule"
+  description = "Triggers call to WITS API for PRSS forecast data, every 30 min"
+
+  state                        = "ENABLED"
+  schedule_expression_timezone = "Pacific/Auckland"
+  schedule_expression          = "cron(5,35 * * * ? *)"
+
+  flexible_time_window {
+    mode                      = "FLEXIBLE"
+    maximum_window_in_minutes = 2
+  }
+
+  target {
+    arn      = var.prss_arn
+    role_arn = aws_iam_role.scheduler_role.arn
+  }
 }
 
-resource "aws_cloudwatch_event_rule" "prsl_schedule" {
-  name        = "prsl_schedule"
-  description = "Triggers call to WITS API for PRSL, every 2 hours"
 
-  role_arn = aws_iam_role.scheduler_role.arn
-  schedule_expression = "cron(15 */2 * * ? *)"
+resource "aws_scheduler_schedule" "prsl_schedule" {
+  name       = "prsl_schedule"
+  description = "Triggers call to WITS API for PRSL forecast data, every 2 hours"
+
+  state                        = "ENABLED"
+  schedule_expression_timezone = "Pacific/Auckland"
+  schedule_expression          = "cron(15 */2 * * ? *)"
+
+  flexible_time_window {
+    mode                      = "FLEXIBLE"
+    maximum_window_in_minutes = 2
+  }
+
+  target {
+    arn      = var.prsl_arn
+    role_arn = aws_iam_role.scheduler_role.arn
+  }
 }
 
-resource "aws_cloudwatch_event_rule" "purge_schedule" {
-  name        = "purge_schedule"
+
+resource "aws_scheduler_schedule" "purge_schedule" {
+  name       = "purge_schedule"
   description = "Triggers a purge of the database, of outdated electricity price forecast data"
 
-  role_arn = aws_iam_role.scheduler_role.arn
-  schedule_expression = "cron(40 1 12 * ? *)"
+  state                        = "ENABLED"
+  schedule_expression_timezone = "Pacific/Auckland"
+  schedule_expression          = "cron(40 1 12 * ? *)"
+
+  flexible_time_window {
+    mode                      = "FLEXIBLE"
+    maximum_window_in_minutes = 20
+  }
+
+  target {
+    arn      = var.purge_arn
+    role_arn = aws_iam_role.scheduler_role.arn
+  }
 }
-
-

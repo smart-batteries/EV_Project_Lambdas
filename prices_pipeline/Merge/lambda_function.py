@@ -3,6 +3,7 @@ import logging
 import sys
 import psycopg2
 import json
+from datetime import datetime
 
 # db connection settings
 host = os.environ['RDS_HOST']
@@ -17,7 +18,7 @@ logger.setLevel(logging.INFO)
 # Establish a connection to the database
 try:
     conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, connect_timeout=10)
-    logging.info("Successfully connected to PostgreSQL.")
+    logging.info(f"Successfully connected to {dbname} database at {host}.")
 except (Exception, psycopg2.Error) as e:
     logger.error("ERROR: Failed to connect to PostgreSQL.")
     logger.error(e)
@@ -28,7 +29,7 @@ with conn.cursor() as cur:
 
     # Create staging table
     try:
-        cur.callproc("merge_create_stage")
+        cur.execute("CALL merge_create_stage();")
         conn.commit()
         logger.info("Successfully created staging table in database.")
 
@@ -58,19 +59,19 @@ def lambda_handler(event, context):
             # Add price forecasts to the staging table
             try:
                 for forecast in price_forecasts:
-                    cur.callproc(
-                        "merge_insert_stage",
+                    cur.execute(
+                        "CALL merge_insert_stage(%s::character varying, %s, %s::smallint, %s, %s, %s::character varying);",
                         (
                             forecast['node'],
-                            forecast['tradingDateTime'],
+                            datetime.strptime(forecast['tradingDateTime'][:19], '%Y-%m-%dT%H:%M:%S'),
                             forecast['tradingPeriod'],
                             forecast['price'],
-                            forecast['lastRunTime'],
+                            datetime.strptime(forecast['lastRunTime'][:19], '%Y-%m-%dT%H:%M:%S'),
                             forecast['schedule']
                         )
                     )
                     conn.commit()
-                logger.info(f"Successfully inserted price data into staging table, for forecast time: {time_of_forecast}.")
+                    logger.info(f"Successfully inserted price data into staging table, for forecast time: {time_of_forecast}.")
                 
             except (Exception, psycopg2.Error) as e:
                 logger.error("ERROR: Failed to insert price data into staging table.")
@@ -79,9 +80,9 @@ def lambda_handler(event, context):
                 
             # Merge price data into primary table
             try:
-                cur.callproc("merge_update_forecasts")
+                cur.execute("CALL merge_update_forecasts();")
                 conn.commit()
-                cur.callproc("merge_insert_forecasts")
+                cur.execute("CALL merge_insert_forecasts();")
                 conn.commit()
                 logger.info(f"Successfully merged price data into primary table, for time of forecast: {time_of_forecast}.")
             

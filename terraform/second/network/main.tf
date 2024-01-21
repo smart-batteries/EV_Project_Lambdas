@@ -1,4 +1,4 @@
-# Fetch default VPC, subnets & security group
+# Fetch default VPC, subnets & internet gateway
 
 data "aws_vpc" "default" {
   default = true
@@ -9,12 +9,45 @@ data "aws_subnets" "default" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+} # filer state = "available"
+
+data "aws_internet_gateway" "default" {
+  filter {
+    name   = "attachment.vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
 }
 
-locals {
-  list_subnet_ids = [for subnet_id in data.aws_subnets.default.ids : subnet_id]
+
+
+
+
+# Build NAT gateway
+
+# fixed IP address; requests from AWS instances will appear to come from this source address, to external hosts
+resource "aws_eip" "visible_address" {
+  domain     = "vpc"
+  depends_on = [data.aws_internet_gateway.default]
 }
 
+resource "aws_nat_gateway" "nat_gateway" {
+  connectivity_type = "public"
+  allocation_id     = aws_eip.visible_address.id
+  subnet_id         = data.aws_subnets.default.ids[0]
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = data.aws_vpc.default.id
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+  }
+}
+
+resource "aws_route_table_association" "instance" {
+  subnet_id      = data.aws_subnets.default.ids[0]
+  route_table_id = aws_route_table.private.id
+}
 
 
 

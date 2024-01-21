@@ -10,16 +10,8 @@ output "merge_arn" {
   value = aws_lambda_function.merge.arn
 }
 
-output "log_request_arn" {
-  value = aws_lambda_function.log_request.arn
-}
-
-output "log_request_name" {
-  value = aws_lambda_function.log_request.function_name
-}
-
-output "log_request_invoke_arn" {
-  value = aws_lambda_function.log_request.invoke_arn
+output "purge_arn" {
+  value = aws_lambda_function.purge.arn
 }
 
 output "create_problem_arn" {

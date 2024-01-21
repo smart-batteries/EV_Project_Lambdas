@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 # Connect to the database
 try:
     conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, connect_timeout=10)
-    logging.info("Successfully connected to PostgreSQL.")
+    logging.info(f"Successfully connected to {dbname} database at {host}.")
     
 except (Exception, psycopg2.Error) as e:
     logger.error("ERROR: Failed to connect to PostgreSQL.")

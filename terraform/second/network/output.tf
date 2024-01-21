@@ -1,5 +1,5 @@
 output "list_subnet_ids" {
-  value = local.list_subnet_ids
+  value = data.aws_subnets.default.ids
 }
 
 output "lambda_to_rds_id" {

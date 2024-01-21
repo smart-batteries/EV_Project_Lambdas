@@ -38,26 +38,6 @@ variable "queue_url" {
 
 
 
-# Output from the schedules module
-
-variable "prss_schedule_name" {
-  description = "Schedule for PRSS function"
-  type        = string
-}
-
-variable "prsl_schedule_name" {
-  description = "Schedule for PRSL function"
-  type        = string
-}
-
-variable "purge_schedule_name" {
-  description = "Schedule for Purge function"
-  type        = string
-}
-
-
-
-
 # Output from the network module
 
 variable "list_subnet_ids" {

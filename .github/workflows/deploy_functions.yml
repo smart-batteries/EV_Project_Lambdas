@@ -1,9 +1,11 @@
 name: Deploy to AWS lambda functions
 
 on:
-  ## push:
-    ## paths:
-      ## https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+  push:
+    paths:
+     - 'problems_pipeline/**'
+     - 'prices_pipeline/**'
+     - 'DeterministicSolver/**'
   workflow_dispatch
 
 env:
