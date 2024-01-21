@@ -39,8 +39,8 @@ resource "aws_ecr_repository" "repos" {
 resource "aws_cloudwatch_log_group" "function_logs" {
   count = length(var.function_names)
 
-  name                 = "/aws/lambda/${var.function_names[count.index]}"
-  retention_in_days    = 0
+  name              = "/aws/lambda/${var.function_names[count.index]}"
+  retention_in_days = 0
 }
 
 
@@ -48,8 +48,8 @@ resource "aws_cloudwatch_log_group" "function_logs" {
 # Create CloudWatch log group for the state machine
 
 resource "aws_cloudwatch_log_group" "problems_pipeline_state_machine" {
-  name                 = "/aws/vendedlogs/states/problems_pipeline_state_machine"
-  retention_in_days    = 0
+  name              = "/aws/vendedlogs/states/problems_pipeline_state_machine"
+  retention_in_days = 0
 }
 
 

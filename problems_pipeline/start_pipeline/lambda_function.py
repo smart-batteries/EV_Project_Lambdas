@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 import boto3
-from datetime import datetime
 import json
 
 # Create logger object
@@ -20,8 +19,8 @@ def lambda_handler(event, context):
         user_input = event['queryStringParameters']
         expected_input = ('start', 'end', 'kwh', 'kw', 'node')
         if all(key in user_input for key in expected_input):
-            start_time = datetime.strptime(user_input.get('start'), '%Y-%m-%d %H:%M')
-            end_time = datetime.strptime(user_input.get('end'), '%Y-%m-%d %H:%M')
+            start_time = user_input.get('start')
+            end_time = user_input.get('end')
             kwh_to_charge = float(user_input.get('kwh'))
             kw_charge_rate = float(user_input.get('kw'))
             node = user_input.get('node')
@@ -44,12 +43,13 @@ def lambda_handler(event, context):
     # Trigger the step function to invoke the downstream functions
     try:
         input = {
-            "request_id": request_id,
-            "start_time": start_time,
-            "end_time": end_time,
-            "kwh_to_charge": kwh_to_charge,
-            "kw_charge_rate": kw_charge_rate,
-            "node": node
+            "user_request" : {
+                "start_time": start_time,
+                "end_time": end_time,
+                "kwh_to_charge": kwh_to_charge,
+                "kw_charge_rate": kw_charge_rate,
+                "node": node
+            }
         }
         response = step_func_client.start_execution(
             stateMachineArn = state_machine_arn,

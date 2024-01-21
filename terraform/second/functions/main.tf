@@ -24,6 +24,10 @@ data "aws_ecr_repository" "get_prices" {
 data "aws_ecr_repository" "solver" {
   name = "solver"
 }
+data "aws_ecr_repository" "return_result" {
+  name = "return_result"
+}
+
 
 
 

@@ -81,6 +81,7 @@ module "state_machine" {
   depends_on = [module.functions]
 
   state_machine_role_arn = module.roles.state_machine_role_arn
+  log_request_arn    = module.functions.log_request_arn
   create_problem_arn = module.functions.create_problem_arn
   get_prices_arn     = module.functions.get_prices_arn
   solver_arn         = module.functions.solver_arn

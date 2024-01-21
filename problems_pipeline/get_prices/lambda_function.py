@@ -76,7 +76,7 @@ def lambda_handler(event, context):
                 logger.error(e)
                 sys.exit()
                 
-        # Generate & return a run id, to pass to the solver downstream
+        # Generate & return a run id, to pass to the state machine
         return {
             "run_id": str(uuid4())
         }

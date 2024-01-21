@@ -8,6 +8,11 @@ variable "state_machine_role_arn" {
 
 # Output from the functions module
 
+variable "log_request_arn" {
+  type        = string
+  description = "ARN of the log_request function"
+}
+
 variable "create_problem_arn" {
   type        = string
   description = "ARN of the create_problem function"

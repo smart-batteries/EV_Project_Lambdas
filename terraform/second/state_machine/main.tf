@@ -15,24 +15,30 @@ resource "aws_sfn_state_machine" "problems_pipeline_state_machine" {
   definition = <<EOF
 {
   "Comment": "Execute the lambda functions of the problems pipeline",
-  "StartAt": "create_problem",
+  "StartAt": "log_request",
   "States": {
+    "log_request": {
+      "Type": "Task",
+      "Resource": "${var.log_request_arn}",
+      "InputPath": "$.user_request",
+      "Next": "create_problem"
+    },
     "create_problem": {
       "Type": "Task",
       "Resource": "${var.create_problem_arn}",
-      "InputPath": "$",
+      "InputPath": "$.full_request",
       "Next": "get_prices"
     },
     "get_prices": {
       "Type": "Task",
       "Resource": "${var.get_prices_arn}",
-      "InputPath": "$",
+      "InputPath": "$.prob_id",
       "Next": "solver"
     },
     "solver": {
       "Type": "Task",
       "Resource": "${var.solver_arn}",
-      "InputPath": "$",
+      "InputPath": "$.run_id",
       "End": true
     }
   }

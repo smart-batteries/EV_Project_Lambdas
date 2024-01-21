@@ -14,6 +14,14 @@ output "purge_arn" {
   value = aws_lambda_function.purge.arn
 }
 
+
+
+
+
+output "log_request_arn" {
+  value = aws_lambda_function.log_request.arn
+}
+
 output "create_problem_arn" {
   value = aws_lambda_function.create_problem.arn
 }

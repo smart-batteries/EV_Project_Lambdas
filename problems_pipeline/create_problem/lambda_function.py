@@ -1,8 +1,7 @@
 import os
-import logging
 import sys
+import logging
 import psycopg2
-from datetime import datetime
 
 # db connection settings
 host = os.environ['RDS_HOST']
@@ -26,22 +25,45 @@ except (Exception, psycopg2.Error) as e:
 
 def lambda_handler(event, context):
 
-    request_id = event['request_id']
+    logger.info(f"event: {event}.")
+    logger.info(f"event type: {type(event)}.")
+
+    for i in event:
+        logger.info(f"i: {i}.")
+
 
     with conn.cursor() as cur:
 
-        # Extract values from opt_requests table for the given request_id
+        # Extract values from state machine's input
         try:
-            cur.callproc(extract_opt_request, [request_id])
-            request = cur.fetchone()
+            "request_id": event.get('request_id'),
+            "start_time": event.get('start_time'),
+            "end_time": event.get('end_time'),
+            "kwh_to_charge": event.get('kwh_to_charge'),
+            "kw_charge_rate": event.get('kw_charge_rate'),
+            "node": event.get('node')
+            logger.info(f"Successfully received user data from state machine, for request_id: {request_id}.")
+    
+        except Exception as e:
+            logger.error("ERROR: Failed to receive user data from state machine.")
+            logger.error(e)
+            sys.exit()
+
+        '''
+
+        old version:
+
+        
+        # Extract values from state machine's input
+        try:
+            cur.callproc(extract_opt_request, (request_id,) )
+            request = cur.fetchone()[0]
             start_time, end_time, kwh_to_charge, kw_charge_rate = request
             logger.info(f"Successfully extracted user data from opt_requests table, for request_id: {request_id}.")
     
-        except Exception as e:
-            logger.error(f"ERROR: Failed to extract user data from opt_requests table, for request_id: {request_id}.")
-            logger.error(e)
-            sys.exit()
-    
+        '''
+
+        
         # Transform into values to insert into opt_problems table
         try:
             start_rounded = round_time_up(start_time)
@@ -75,6 +97,11 @@ def lambda_handler(event, context):
             logger.error("ERROR: Failed to create an optimisation problem in opt_problems table.")
             logger.error(e)
             sys.exit()
+
+        # Return prob_id to the state machine
+        return {
+            "prob_id": prob_id
+        }
 
 
 def round_time_up(dt):

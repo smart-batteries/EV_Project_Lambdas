@@ -2,8 +2,7 @@ import os
 import sys
 import logging
 import psycopg2
-import boto3
-import json
+from datetime import datetime
 
 # Set variables to connect to Postgres
 host = os.environ['RDS_HOST']
@@ -25,15 +24,13 @@ except (Exception, psycopg2.Error) as e:
     logger.error(e)
     sys.exit()
 
-
 def lambda_handler(event, context):
-
-    request_id = event['request_id']
-    start_time = event['start_time']
-    end_time = event['end_time']
-    kwh_to_charge = event['kwh_to_charge']
-    kw_charge_rate = event['kw_charge_rate']
-    node = event['node']
+    
+    start_time = datetime.strptime( event.get('start_time'), '%Y-%m-%d %H:%M' )
+    end_time = datetime.strptime( event.get('end_time'), '%Y-%m-%d %H:%M' )
+    kwh_to_charge = event.get('kwh_to_charge')
+    kw_charge_rate = event.get('kw_charge_rate')
+    node = event.get('node')
 
     with conn.cursor() as cur:
           
@@ -58,4 +55,28 @@ def lambda_handler(event, context):
             logger.error(e)
             sys.exit()
 
-        # what's the output to pass back to the state machine
+        # Return request_id to the state machine
+        return {
+            "full_request" : {
+                "request_id": request_id,
+                "start_time": start_time,
+                "end_time": end_time,
+                "kwh_to_charge": kwh_to_charge,
+                "kw_charge_rate": kw_charge_rate,
+                "node": node
+            }
+        }
+
+
+
+'''
+if state machine is set to : $.full_request
+
+if set to: $.request_id
+
+use: 
+        return {
+            "request_id": request_id
+        }
+    
+'''
