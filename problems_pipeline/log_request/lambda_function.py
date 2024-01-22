@@ -26,21 +26,21 @@ except (Exception, psycopg2.Error) as e:
 
 def lambda_handler(event, context):
     
-    start_time = datetime.strptime( event.get('start_time'), '%Y-%m-%d %H:%M' )
-    end_time = datetime.strptime( event.get('end_time'), '%Y-%m-%d %H:%M' )
+    start_time = event.get('start_time')
+    end_time = event.get('end_time')
     kwh_to_charge = event.get('kwh_to_charge')
     kw_charge_rate = event.get('kw_charge_rate')
     node = event.get('node')
 
     with conn.cursor() as cur:
-          
+        
         # Log the new run request in opt_requests table
         try:
             cur.callproc(
-                "insert_opt_request",
+                "insert_run_request",
                 (
-                    start_time,
-                    end_time,
+                    datetime.strptime(start_time, '%Y-%m-%d %H:%M'),
+                    datetime.strptime(end_time, '%Y-%m-%d %H:%M'),
                     kwh_to_charge,
                     kw_charge_rate,
                     node
@@ -57,26 +57,5 @@ def lambda_handler(event, context):
 
         # Return request_id to the state machine
         return {
-            "full_request" : {
-                "request_id": request_id,
-                "start_time": start_time,
-                "end_time": end_time,
-                "kwh_to_charge": kwh_to_charge,
-                "kw_charge_rate": kw_charge_rate,
-                "node": node
-            }
-        }
-
-
-
-'''
-if state machine is set to : $.full_request
-
-if set to: $.request_id
-
-use: 
-        return {
             "request_id": request_id
         }
-    
-'''

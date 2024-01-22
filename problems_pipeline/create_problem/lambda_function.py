@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import psycopg2
+from datetime import datetime
 
 # db connection settings
 host = os.environ['RDS_HOST']
@@ -25,44 +26,21 @@ except (Exception, psycopg2.Error) as e:
 
 def lambda_handler(event, context):
 
-    logger.info(f"event: {event}.")
-    logger.info(f"event type: {type(event)}.")
-
-    for i in event:
-        logger.info(f"i: {i}.")
-
-
+    request_id = event
+    
     with conn.cursor() as cur:
 
         # Extract values from state machine's input
         try:
-            "request_id": event.get('request_id'),
-            "start_time": event.get('start_time'),
-            "end_time": event.get('end_time'),
-            "kwh_to_charge": event.get('kwh_to_charge'),
-            "kw_charge_rate": event.get('kw_charge_rate'),
-            "node": event.get('node')
-            logger.info(f"Successfully received user data from state machine, for request_id: {request_id}.")
-    
+            cur.callproc('extract_run_request', (request_id,) )
+            request = cur.fetchall()[0]
+            start_time, end_time, kwh_to_charge, kw_charge_rate = request
+            logger.info(f"Successfully extracted user data from opt_requests table, for request_id: {request_id}.")
+            
         except Exception as e:
             logger.error("ERROR: Failed to receive user data from state machine.")
             logger.error(e)
             sys.exit()
-
-        '''
-
-        old version:
-
-        
-        # Extract values from state machine's input
-        try:
-            cur.callproc(extract_opt_request, (request_id,) )
-            request = cur.fetchone()[0]
-            start_time, end_time, kwh_to_charge, kw_charge_rate = request
-            logger.info(f"Successfully extracted user data from opt_requests table, for request_id: {request_id}.")
-    
-        '''
-
         
         # Transform into values to insert into opt_problems table
         try:

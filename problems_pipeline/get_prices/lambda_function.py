@@ -27,14 +27,14 @@ except (Exception, psycopg2.Error) as e:
 
 def lambda_handler(event, context):
 
-    prob_id = event['prob_id']
+    prob_id = event
     
     with conn.cursor() as cur:
 
         # Retrieve the start & end times that define the time window
         try:
-            cur.callproc("extract_time_window", [prob_id])
-            window = cur.fetchone()
+            cur.callproc('extract_time_window', (prob_id,))
+            window = cur.fetchall()[0]
             start_time, end_time, node = window
             logger.info(f"Successfully retrieved the time window, from {start_time} to {end_time}, for node {node}.")
 
@@ -45,7 +45,7 @@ def lambda_handler(event, context):
         
         # Extract the price forecasts, for each half-hour interval of the time window for that node, from elec_prices table
         try:
-            cur.callproc("extract_prob_prices", [start_time, end_time, node])
+            cur.callproc('extract_prob_prices', (start_time, end_time, node))
             forecast_data = cur.fetchall()
             start_period = min(forecast_data, key = lambda x: x[0])[0]
             end_period = max(forecast_data, key = lambda x: x[0])[0]
@@ -60,15 +60,15 @@ def lambda_handler(event, context):
                 
             # Insert the price forecasts of each half-hour interval of the optimisation problem, into opt_prob_prices table
             try:
-                trading_period = forecast[0]
+                trading_period = forecast[1]
                 price = forecast[2]
                 time_of_forecast = forecast[3]
                 cur.callproc(
                     "insert_prob_prices",
-                    (prob_id, trading_period, price, time_of_forecast)
+                    (prob_id, price, trading_period, time_of_forecast)
                 )
                 conn.commit()
-                price_id = cur.fetchone()[0]
+                price_id = cur.fetchall()[0][0]
                 logger.info(f"Successfully inserted forecast data, with price id {price_id} for trading period {trading_period}.")
                 
             except Exception as e:
