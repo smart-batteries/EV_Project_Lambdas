@@ -1,4 +1,4 @@
-### For merge function:
+-- For merge function:
 
 
 CREATE OR REPLACE PROCEDURE merge_create_stage()
@@ -96,7 +96,7 @@ $$;
 
 
 
-### For purge function:
+-- For purge function:
 
 
 CREATE OR REPLACE FUNCTION purge_old_forecasts()
@@ -111,7 +111,7 @@ LANGUAGE plpgsql;
 
 
 
-### For log_request function:
+-- For log_request function:
 
 
 CREATE OR REPLACE FUNCTION insert_run_request(
@@ -136,7 +136,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-### For create_problem function:
+-- For create_problem function:
 
 
 CREATE OR REPLACE FUNCTION extract_run_request(request_id_arg UUID)
@@ -181,7 +181,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-### For get_prices function:
+-- For get_prices function:
 
 
 CREATE OR REPLACE FUNCTION extract_time_window(prob_id_arg UUID)
@@ -258,7 +258,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-### For solver function:
+-- For solver function:
 
 
 
