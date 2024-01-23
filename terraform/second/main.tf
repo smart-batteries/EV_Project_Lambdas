@@ -109,6 +109,8 @@ module "user_api" {
   start_pipeline_arn        = module.penultimate.start_pipeline_arn
   start_pipeline_name       = module.penultimate.start_pipeline_name
   start_pipeline_invoke_arn = module.penultimate.start_pipeline_invoke_arn
+
+  return_result_arn        = module.functions.return_result_arn
+  return_result_name       = module.functions.return_result_name
+  return_result_invoke_arn = module.functions.return_result_invoke_arn
 }
-
-

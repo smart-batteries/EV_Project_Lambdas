@@ -24,7 +24,7 @@ jobs:
         id: updated-images
         run: |
           UPDATED=$(git diff --name-only HEAD^ HEAD)
-          UPDATED_IMAGES=$(echo "$UPDATED" | grep "images" | sed "s/\/lambda_function.py//g" | sort | uniq)
+          UPDATED_IMAGES=$(echo "$UPDATED" | grep "images" | sed -E "s/\/\w+\.\w+$//g" | sort | uniq)
           
           if [ -n "$UPDATED_IMAGES" ]; then
             echo "These images have been updated:"
@@ -63,10 +63,6 @@ jobs:
               docker build \
                 -f "$PATH"/Dockerfile \
                 -t $ECR_REGISTRY/$(basename "$PATH"):$IMAGE_TAG \
-                -e RDS_HOST=${{ secrets.AWS_RDS_HOST }} \
-                -e DB_NAME=${{ secrets.AWS_RDS_DB_NAME }} \
-                -e USER_NAME=${{ secrets.AWS_RDS_USER_NAME }} \
-                -e PASSWORD=${{ secrets.AWS_RDS_PASSWORD }} \
                 .
               docker push $ECR_REGISTRY/$(basename "$PATH"):$IMAGE_TAG
               

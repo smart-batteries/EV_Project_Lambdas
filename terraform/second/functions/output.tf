@@ -35,3 +35,17 @@ output "solver_arn" {
 }
 
 
+
+
+
+output "return_result_arn" {
+  value = aws_lambda_function.return_result.arn
+}
+
+output "return_result_name" {
+  value = aws_lambda_function.return_result.function_name
+}
+
+output "return_result_invoke_arn" {
+  value = aws_lambda_function.return_result.invoke_arn
+}

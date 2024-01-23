@@ -3,9 +3,9 @@ data "aws_security_group" "default" {
 }
 
 resource "aws_db_instance" "rds_instance" {
-  identifier              = "EV_Project_database"
+  identifier              = "ev-project-db"
   allocated_storage       = 20
-  db_name                 = "forecasts_db"
+  db_name                 = "ev_project_db"
   engine                  = "postgres"
   engine_version          = "15"
   instance_class          = "db.t3.micro"
