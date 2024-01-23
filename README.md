@@ -22,24 +22,24 @@ Once you’ve set it up:
 2. Request for the charging schedule.
 * The software returns the charging schedule for the device.
 
-## Architecture 
+## Architecture 
 
-_diagram_
+![architecture diagram](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/architecture.png)
 
 The software has two pipelines.
 
 The first:
 
-* Extracts price forecasts from the New Zealand Electricity Authority’s [WITS API](developer.electricityinfo.co.nz/WITS)
-* Buffers the data with [AWS SQS](aws.amazon.com/sqs).
-* Loads the data into a [PostgreSQL](postgresql.org) instance on [AWS RDS](aws.amazon.com/rds).
+* Extracts price forecasts from the New Zealand Electricity Authority’s [WITS API](https://developer.electricityinfo.co.nz/WITS)
+* Buffers the data with [AWS SQS](https://aws.amazon.com/sqs).
+* Loads the data into a [PostgreSQL](https://postgresql.org) instance on [AWS RDS](https://aws.amazon.com/rds).
 
 The second:
-* Receives user requests and serves responses with [AWS API Gateway](aws.amazon.com/api-gateway).
-* Orchestrates the response with [AWS Step Functions](aws.amazon.com/step-functions).
+* Receives user requests and serves responses with [AWS API Gateway](https://aws.amazon.com/api-gateway).
+* Orchestrates the response with [AWS Step Functions](https://aws.amazon.com/step-functions).
 
 Overall:
-* Process with [Docker](docker.com) images hosted on [AWS Lambda](aws.amazon.com/lambda).
+* Process with [Docker](https://docker.com) images hosted on [AWS Lambda](https://aws.amazon.com/lambda).
 * Create AWS resources with [Terraform](https://www.terraform.io/).
 
 ## Example
@@ -90,7 +90,7 @@ _ERDs_
 
 ## Cloud account & remote repo
 
-First, you’ll need to create an AWS account. The software should fit into their [free tier](aws.amazon.com/free), although we can't guarantee it won't cost cost you anything.
+First, you’ll need to create an AWS account. The software should fit into their [free tier](https://aws.amazon.com/free), although we can't guarantee it won't cost cost you anything.
 
 Then clone the repository into your home directory.
 <pre>
@@ -104,7 +104,7 @@ The price forecasts come from the New Zealand Electricity Authority’s WITS API
 
 **Steps:**
 
-1. Create a [WITS developer account](developer.electricityinfo.co.nz/WITS).
+1. Create a [WITS developer account](https://developer.electricityinfo.co.nz/WITS).
 2. Create an app.
   * The redirect URI doesn’t matter, you can use any URL.
   * Activate the Pricing_API_Application_Registration.
@@ -112,9 +112,9 @@ The price forecasts come from the New Zealand Electricity Authority’s WITS API
 
 _Background info:_
 
-* _About the [New Zealand Electricity Authority](ea.govt.nz)._
-* _[Why we use their WITS API, not their EMI API](forum.emi.ea.govt.nz/thread/three-wholesale-market-price-apis-to-be-decommissioned-on-21-october-2022)._
-* _Documentation for the [Market Prices catalogue](developer.electricityinfo.co.nz/WITS/documentation/market-prices)._
+* _About the [New Zealand Electricity Authority](https://ea.govt.nz)._
+* _[Why we use their WITS API, not their EMI API](https://forum.emi.ea.govt.nz/thread/three-wholesale-market-price-apis-to-be-decommissioned-on-21-october-2022)._
+* _Documentation for the [Market Prices catalogue](https://developer.electricityinfo.co.nz/WITS/documentation/market-prices)._
 
 ## Amazon Web Services
 
@@ -124,7 +124,7 @@ The software consists of:
 
 **Steps:**
 
-1. Create an [AWS account](aws.amazon.com).
+1. Create an [AWS account](https://aws.amazon.com).
   *  Follow the best practises, such as: creating an admin user separate to the root user; setting up MFA for each user.
 2. [Install](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions) the AWS CLI.
   * You can verify installation by running: ```aws --version```
@@ -140,7 +140,7 @@ The software consists of:
 
 We’ll use Terraform for IaC, to easily set up resources on AWS.
 
-First, we'll set up these AWS resources: 
+First, we'll set up these AWS resources: 
 * ECR repos
 * CloudWatch log groups
 
@@ -160,7 +160,7 @@ At this point, you should have empty repos on ECR and empty log groups on CloudW
 
 ## Populate ECR repos
 
-Now, you have empty repos on [ECR](aws.amazon.com/ecr/), which need to be populated by the Docker images.
+Now, you have empty repos on [ECR](https://aws.amazon.com/ecr/), which need to be populated by the Docker images.
 
 If you've forked this repo to your own GitHub repo, you can automate this from there:
 1. Add your AWS CLI access key id, access key secret and region to GitHub secrets. They should be named AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY_SECRET and AWS_REGION respectively.
@@ -186,7 +186,7 @@ At this point, each of your ECR repos should have its corresponding Docker image
 ## More IaC
 
 Now that the ECR repos are ready, set up the rest of the AWS resources:
- 
+ 
 * Lambda functions
 * PostgreSQL on RDS
 * IAM execution roles
