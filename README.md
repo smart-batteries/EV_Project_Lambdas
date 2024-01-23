@@ -46,6 +46,9 @@ Overall:
 
 _this bit_
 
+
+
+
 # How the tool works
 
 ## Solver model
@@ -80,6 +83,9 @@ User request pipeline
 
 _ERDs_
 
+
+
+
 # How to set up the tool
 
 ## Cloud account & remote repo
@@ -96,7 +102,8 @@ cd EV_Project_Lambdas
 
 The price forecasts come from the New Zealand Electricity Authority’s WITS API.
 
-Steps:
+
+**Steps:**
 
 1. Create a [WITS developer account](developer.electricityinfo.co.nz/WITS).
 2. Create an app.
@@ -104,11 +111,12 @@ Steps:
 * Activate the Pricing_API_Application_Registration.
 * Save the client ID and secret.
 
-Background info:
 
-* About the [New Zealand Electricity Authority](ea.govt.nz).
-* [Why we use their WITS API, not their EMI API](forum.emi.ea.govt.nz/thread/three-wholesale-market-price-apis-to-be-decommissioned-on-21-october-2022).
-* Documentation for the [Market Prices catalogue](developer.electricityinfo.co.nz/WITS/documentation/market-prices).
+_Background info:_
+
+* _About the [New Zealand Electricity Authority](ea.govt.nz)._
+* _[Why we use their WITS API, not their EMI API](forum.emi.ea.govt.nz/thread/three-wholesale-market-price-apis-to-be-decommissioned-on-21-october-2022)._
+* _Documentation for the [Market Prices catalogue](developer.electricityinfo.co.nz/WITS/documentation/market-prices)._
 
 ## Amazon Web Services
 
@@ -116,7 +124,8 @@ The tool consists of:
 * Docker images to process data; these will be hosted on AWS Lambda.
 * a database to store data; this will be hosted on an AWS RDS PostgreSQL instance.
 
-Steps:
+
+**Steps:**
 
 1. Create an [AWS account](aws.amazon.com).
 * Follow the best practises, such as: creating an admin user separate to the root user; setting up MFA for each user.
