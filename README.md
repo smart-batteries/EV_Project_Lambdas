@@ -24,7 +24,7 @@ Once you’ve set it up:
 
 ## Architecture 
 
-_diagram_
+![architecture diagram](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/architecture.png)
 
 The software has two pipelines.
 
