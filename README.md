@@ -108,7 +108,7 @@ The price forecasts come from the New Zealand Electricity Authority’s WITS API
 2. Create an app.
   * The redirect URI doesn’t matter, you can use any URL.
   * Activate the Pricing_API_Application_Registration.
-  * Save the WITS client id and secret.
+  * Save the WITS client id and secret for later.
 
 _Background info:_
 
@@ -128,7 +128,7 @@ The software consists of:
   *  Follow the best practises, such as: creating an admin user separate to the root user; setting up MFA for each user.
 2. [Install](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions) the AWS CLI.
   * You can verify installation by running: ```aws --version```
-3. For a designated IAM user, grant it programmatic access, so it can access AWS API-based methods via the CLI. In the console, go to the IAM service > 'Users' > find (or create) the user > 'Security credentials' section > 'Access keys' section > 'Create access key' button. Save the AWS access key id and secret.
+3. For a designated IAM user, grant it programmatic access, so it can access AWS API-based methods via the CLI. In the console, go to the IAM service > 'Users' > find (or create) the user > 'Security credentials' section > 'Access keys' section > 'Create access key' button. Save the AWS access key id and secret for later.
   * Store your private information securely, ideally in a password manager.
 4. In your local terminal, run ```aws configure``` and enter your information.
   * Enter your user's AWS access key id and secret.
@@ -149,7 +149,7 @@ First, we'll set up these AWS resources:
 1. Install [Terraform](https://developer.hashicorp.com/terraform/install).
   * You may need to add the Terraform executable to your system's global path.
   * You can verify installation by running: ```terraform --version```
-2. Edit the ```EV_Project_Lambdas/terraform/first/variables.tf``` doc with the AWS region you'll use; for example, "eu-north-1".
+2. Edit the ```terraform/first/variables.tf``` doc with the AWS region you'll use; for example, ```"eu-north-1"```.
 3. Change to the ```EV_Project_Lambdas/terraform/first``` directory and run:
 <pre>
 terraform init
@@ -163,7 +163,7 @@ At this point, you should have empty repos on ECR and empty log groups on CloudW
 Now, you have empty repos on [ECR](https://aws.amazon.com/ecr/), which need to be populated by the Docker images.
 
 If you've forked this repo to your own GitHub repo, you can automate this from there:
-1. Add your AWS CLI access key id, access key secret and region to GitHub secrets. They should be named AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY_SECRET and AWS_REGION respectively.
+1. Add your AWS region, CLI access key id and secret to GitHub secrets. They should be named AWS_REGION, AWS_ACCESS_KEY_ID and AWS_ACCESS_KEY_SECRET respectively.
 2. Dispatch the ```.github/workflows/deploy_functions.yml``` workflow.
 
 Alternatively, you can do it manually from your local terminal:
@@ -198,8 +198,8 @@ Now that the ECR repos are ready, set up the rest of the AWS resources:
 
 **Steps:**
 
-1. Edit the ```EV_Project_Lambdas/terraform/second/variables.tf``` doc.
-  * Use __the same__ AWS region as you did in the ```EV_Project_Lambdas/terraform/first/variables.tf``` doc.
+1. Edit the ```terraform/second/variables.tf``` doc.
+  * Use __the same__ AWS region as you did in the ```terraform/first/variables.tf``` doc.
   * Add the IP address of your home network (or wherever you want to connect to your database from).
   * Create a username and password to log in to your database. Save this for later.
   * Add the client id and secret from your WITS developer account.
@@ -220,10 +220,10 @@ Your PostgreSQL instance is currently empty. You need to add the tables and stor
 1. To connect to your RDS instance, follow [these instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_CommonTasks.Connect.html). Basically, in your local terminal, run this command: ```psql -h <your-rds-endpoint> -p 5432 -d <your-rds-database> -U <your-rds-user> -W```
 
   *  For the ```-h``` host flag, input the RDS endpoint. You can find that either in the console or via an AWS CLI command.
-  *  For the ```-d``` database flag, input ```EV_Project_database```.
-    * (Unless you changed the database name in the ```EV_Project_Lambdas/terraform/second/database/main.tf``` doc, in which case, use the name you set there.)
-  *  For the ```-U``` username flag, input the username you set in the ```EV_Project_Lambdas/terraform/second/variables.tf``` doc.
-  *  When the ```-W``` flag prompts you for a password, enter the password you set in the ```EV_Project_Lambdas/terraform/second/variables.tf``` doc.
+  *  For the ```-d``` database flag, input ```ev_project_db```.
+    * (Unless you changed the database name in the ```terraform/second/database/main.tf``` doc, in which case, use the name you set there.)
+  *  For the ```-U``` username flag, input the username you set in the ```terraform/second/variables.tf``` doc.
+  *  When the ```-W``` flag prompts you for a password, enter the password you set in the ```terraform/second/variables.tf``` doc.
 
 2. To create the tables & an enum data type, run each SQL command in the [database tables.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20tables.md) doc.
 3. To create the stored procedures & custom functions, run each SQL command in the [database procedures.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20procedures.md) doc.
