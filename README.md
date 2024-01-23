@@ -59,7 +59,7 @@ _Josh_
 
 There are two pipelines:
 
-Forecast pipeline
+__Forecast pipeline__
 
 1. Every 30 min: Extract short-term price forecasts from the WITS API.
 2. Every 2 hours: Extract long-term price forecasts from the WITS API.
@@ -68,7 +68,7 @@ Forecast pipeline
   * outdated data is overwritten with the latest forecasts.
 4. Historical forecasts (>1 month in the past) are purged from the database.
 
-User request pipeline
+__User request pipeline__
 
 1. The user calls the software’s API, to request the model to run.
 * Extract input data from their API call, and transform it so it’s in a usable format for the model.
@@ -128,12 +128,12 @@ The software consists of:
   *  Follow the best practises, such as: creating an admin user separate to the root user; setting up MFA for each user.
 2. [Install](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions) the AWS CLI.
   * You can verify installation by running: ```aws --version```
-3. For a designated IAM user, grant it programmatic access, so it can access AWS API-based methods via the CLI. In the console, go to the IAM service > 'Users' > find the user > 'Security credentials' section > 'Access keys' section > 'Create access key' button. Save the AWS access key id and secret.
+3. For a designated IAM user, grant it programmatic access, so it can access AWS API-based methods via the CLI. In the console, go to the IAM service > 'Users' > find (or create) the user > 'Security credentials' section > 'Access keys' section > 'Create access key' button. Save the AWS access key id and secret.
   * Store your private information securely, ideally in a password manager.
 4. In your local terminal, run ```aws configure``` and enter your information.
   * Enter your user's AWS access key id and secret.
-  * Enter the AWS region you'll use; for example, "eu-north-1".
-    * Keep in mind, different regions having different pricing tiers and different schedules for rolling out new tools. "eu-north-1" and "us-east-1" are good defaults. Avoid Sao Paulo.
+  * Enter the AWS region you'll use; for example, ```eu-north-1```.
+    * Keep in mind, different regions having different pricing tiers and different schedules for rolling out new tools. ```eu-north-1``` and ```us-east-1``` are good defaults. Avoid Sao Paulo.
   * Set the default output format to ```json```.
 
 ## Infrastructure as Code
@@ -220,7 +220,8 @@ Your PostgreSQL instance is currently empty. You need to add the tables and stor
 1. To connect to your RDS instance, follow [these instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_CommonTasks.Connect.html). Basically, in your local terminal, run this command: ```psql -h <your-rds-endpoint> -p 5432 -d <your-rds-database> -U <your-rds-user> -W```
 
   *  For the ```-h``` host flag, input the RDS endpoint. You can find that either in the console or via an AWS CLI command.
-  *  For the ```-d``` database flag, input ```EV_Project_database```. (Unless you changed the database name in the ```EV_Project_Lambdas/terraform/second/database/main.tf``` doc, in which case, use the name you set there.)
+  *  For the ```-d``` database flag, input ```EV_Project_database```.
+    * (Unless you changed the database name in the ```EV_Project_Lambdas/terraform/second/database/main.tf``` doc, in which case, use the name you set there.)
   *  For the ```-U``` username flag, input the username you set in the ```EV_Project_Lambdas/terraform/second/variables.tf``` doc.
   *  When the ```-W``` flag prompts you for a password, enter the password you set in the ```EV_Project_Lambdas/terraform/second/variables.tf``` doc.
 
