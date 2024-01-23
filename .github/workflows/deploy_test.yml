@@ -3,9 +3,6 @@ name: Test deployment
 on:
   workflow_dispatch
 
-env:
-  AWS_REGION: "us-east-1"
-
 jobs:
   build_publish_deploy:
     name: Deploy
@@ -23,18 +20,10 @@ jobs:
         id: updated-images
         run: |
           UPDATED=$(git diff --name-only HEAD^ HEAD)
-          UPDATED_PIPELINE=$(echo "$UPDATED" | grep "pipeline" | sed "s/\/lambda_function.py//g" | sort | uniq)
-          UPDATED_SOLVER=$(echo "$UPDATED" | grep "olver" | sed "s/\/lambda_function.py//g" | sort | uniq)
-          UPDATED_IMAGES="$UPDATED_PIPELINE"$'\n'"$UPDATED_SOLVER"
+          UPDATED_IMAGES=$(echo "$UPDATED" | grep "images" | sed "s/\/lambda_function.py//g" | sort | uniq)
           
           echo "UPDATED: "
           echo "$UPDATED"
-
-          echo "UPDATED_PIPELINE: "
-          echo "$UPDATED_PIPELINE"
-
-          echo "UPDATED_SOLVER:"
-          echo "$UPDATED_SOLVER"
 
           echo "UPDATED_IMAGES:"
           echo "$UPDATED_IMAGES"

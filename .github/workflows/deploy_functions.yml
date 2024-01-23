@@ -3,13 +3,9 @@ name: Deploy to AWS lambda functions
 on:
   push:
     paths:
-     - 'problems_pipeline/**'
-     - 'prices_pipeline/**'
-     - 'DeterministicSolver/**'
+     - 'images/**'
   workflow_dispatch
 
-env:
-  AWS_REGION: "us-east-1"
 
 jobs:
   build_publish_deploy:
@@ -28,9 +24,7 @@ jobs:
         id: updated-images
         run: |
           UPDATED=$(git diff --name-only HEAD^ HEAD)
-          UPDATED_PIPELINE=$(echo "$UPDATED" | grep "pipeline" | sed "s/\/lambda_function.py//g" | sort | uniq)
-          UPDATED_SOLVER=$(echo "$UPDATED" | grep "olver" | sed "s/\/lambda_function.py//g" | sort | uniq)
-          UPDATED_IMAGES="$UPDATED_PIPELINE"$'\n'"$UPDATED_SOLVER"
+          UPDATED_IMAGES=$(echo "$UPDATED" | grep "images" | sed "s/\/lambda_function.py//g" | sort | uniq)
           
           if [ -n "$UPDATED_IMAGES" ]; then
             echo "These images have been updated:"
@@ -45,7 +39,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ISA_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_ISA_ACCESS_KEY_SECRET }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Log in to AWS ECR
         id: login-ecr
