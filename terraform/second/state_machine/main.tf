@@ -26,7 +26,7 @@ resource "aws_sfn_state_machine" "problems_pipeline_state_machine" {
     "create_problem": {
       "Type": "Task",
       "Resource": "${var.create_problem_arn}",
-      "InputPath": "$.full_request",
+      "InputPath": "$.request_id",
       "Next": "get_prices"
     },
     "get_prices": {

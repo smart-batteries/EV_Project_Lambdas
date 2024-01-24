@@ -220,12 +220,11 @@ Your PostgreSQL instance is currently empty. You need to add the tables and stor
 1. To connect to your RDS instance, follow [these instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_CommonTasks.Connect.html). Basically, in your local terminal, run this command: ```psql -h <your-rds-endpoint> -p 5432 -d <your-rds-database> -U <your-rds-user> -W```
 
   *  For the ```-h``` host flag, input the RDS endpoint. You can find that either in the console or via an AWS CLI command.
-  *  For the ```-d``` database flag, input ```ev_project_db```.
-    * (Unless you changed the database name in the ```terraform/second/database/main.tf``` doc, in which case, use the name you set there.)
+  *  For the ```-d``` database flag, input ```ev_project_db```. (Assuming you didn't change the ```db_name``` argument in the ```terraform/second/database/main.tf``` doc.)
   *  For the ```-U``` username flag, input the username you set in the ```terraform/second/variables.tf``` doc.
   *  When the ```-W``` flag prompts you for a password, enter the password you set in the ```terraform/second/variables.tf``` doc.
 
-2. To create the tables & an enum data type, run each SQL command in the [database tables.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20tables.md) doc.
-3. To create the stored procedures & custom functions, run each SQL command in the [database procedures.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20procedures.md) doc.
+2. To create the tables & an enum data type, run each SQL command in the [database tables.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20tables.sql) doc.
+3. To create the stored procedures & custom functions, run each SQL command in the [database procedures.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20procedures.sql) doc.
 
 At this point, your instance of the software should be ready to use.

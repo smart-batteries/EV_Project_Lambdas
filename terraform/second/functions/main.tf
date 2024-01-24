@@ -38,7 +38,7 @@ data "aws_ecr_repository" "return_result" {
 resource "aws_lambda_function" "prss" {
   function_name = "prss"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.prss.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.prss.repository_url}:latest"
   role          = var.wits_role_arn
   timeout       = 30
 
@@ -56,7 +56,7 @@ resource "aws_lambda_function" "prss" {
 resource "aws_lambda_function" "prsl" {
   function_name = "prsl"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.prsl.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.prsl.repository_url}:latest"
   role          = var.wits_role_arn
   timeout       = 30
 
@@ -74,7 +74,7 @@ resource "aws_lambda_function" "prsl" {
 resource "aws_lambda_function" "merge" {
   function_name = "merge"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.merge.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.merge.repository_url}:latest"
   role          = var.merge_role_arn
   timeout       = 60
 
@@ -98,7 +98,7 @@ resource "aws_lambda_function" "merge" {
 resource "aws_lambda_function" "purge" {
   function_name = "purge"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.purge.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.purge.repository_url}:latest"
   role          = var.lambda_role_arn
   timeout       = 60
 
@@ -126,7 +126,7 @@ resource "aws_lambda_function" "purge" {
 resource "aws_lambda_function" "log_request" {
   function_name = "log_request"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.log_request.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.log_request.repository_url}:latest"
   role          = var.lambda_role_arn
   timeout       = 60
 
@@ -150,7 +150,7 @@ resource "aws_lambda_function" "log_request" {
 resource "aws_lambda_function" "create_problem" {
   function_name = "create_problem"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.create_problem.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.create_problem.repository_url}:latest"
   role          = var.lambda_role_arn
   timeout       = 60
 
@@ -174,7 +174,7 @@ resource "aws_lambda_function" "create_problem" {
 resource "aws_lambda_function" "get_prices" {
   function_name = "get_prices"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.get_prices.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.get_prices.repository_url}:latest"
   role          = var.lambda_role_arn
   timeout       = 60
 
@@ -198,7 +198,7 @@ resource "aws_lambda_function" "get_prices" {
 resource "aws_lambda_function" "solver" {
   function_name = "solver"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.solver.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.solver.repository_url}:latest"
   role          = var.lambda_role_arn
   timeout       = 60
 
@@ -223,7 +223,7 @@ resource "aws_lambda_function" "solver" {
 resource "aws_lambda_function" "return_result" {
   function_name = "return_result"
   package_type  = "Image"
-  image_uri     = "${data.aws_ecr_repository.return_result.repository_url}"
+  image_uri     = "${data.aws_ecr_repository.return_result.repository_url}:latest"
   role          = var.lambda_role_arn
   timeout       = 60
 }
