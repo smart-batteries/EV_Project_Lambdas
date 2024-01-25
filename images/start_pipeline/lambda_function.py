@@ -3,7 +3,7 @@ import sys
 import logging
 import boto3
 import json
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 # Create logger object
 logger = logging.getLogger()

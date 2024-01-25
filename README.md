@@ -24,7 +24,7 @@ Once you’ve set it up:
 
 ## Architecture
 
-![architecture diagram](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/assets/architecture.png)
+![architecture diagram](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/info/architecture.png)
 
 The software has two pipelines.
 
@@ -81,7 +81,7 @@ __User request pipeline__
 
 ## Database schema
 
-![ERD](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/assets/ERD.png)
+![ERD](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/info/ERD.png)
 
   * price_forecasts: electricity price forecasts.
   * opt_requests: user request, as accepted by the user request API.
