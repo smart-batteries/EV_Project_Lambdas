@@ -11,9 +11,13 @@ output "start_pipeline_role_arn" {
 }
 
 output "state_machine_role_arn" {
-  value = aws_iam_role.state_machine_execution_role.arn
+  value = aws_iam_role.state_machine_role.arn
 }
 
 output "lambda_role_arn" {
   value = aws_iam_role.lambda_execution_role.arn
+}
+
+output "return_result_arn" {
+  value = aws_iam_role.return_result_role.arn
 }

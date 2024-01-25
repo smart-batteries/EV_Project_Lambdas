@@ -180,8 +180,8 @@ resource "aws_iam_role_policy_attachment" "attach_start_pipeline_policy" {
 
 # Create an IAM execution role for the Step Functions state machine
 
-resource "aws_iam_role" "state_machine_execution_role" {
-  name               = "state_machine_execution_role"
+resource "aws_iam_role" "state_machine_role" {
+  name               = "state_machine_role"
   assume_role_policy = data.aws_iam_policy_document.step_func_assume_role.json
 }
 
@@ -227,7 +227,7 @@ resource "aws_iam_policy" "state_machine_policy" {
 # Attach permissions policy to execution role
 
 resource "aws_iam_role_policy_attachment" "attach_state_machine_policy" {
-  role       = aws_iam_role.state_machine_execution_role.name
+  role       = aws_iam_role.state_machine_role.name
   policy_arn = aws_iam_policy.state_machine_policy.arn
 }
 
@@ -280,4 +280,56 @@ resource "aws_iam_policy" "lambda_policy" {
 resource "aws_iam_role_policy_attachment" "attach_lambda_policy" {
   role       = aws_iam_role.lambda_execution_role.name
   policy_arn = aws_iam_policy.lambda_policy.arn
+}
+
+
+
+
+
+
+# Create IAM execution role for return_result functions
+
+resource "aws_iam_role" "return_result_role" {
+  name               = "return_result_role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+}
+
+# Set permissions policy for the return_result role
+
+data "aws_iam_policy_document" "return_result_permissions" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:BatchGetImage",
+      "ecr:GetDownloadUrlForLayer",
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "ec2:CreateNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DescribeVpcs",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
+      "ec2:AssignPrivateIpAddresses",
+      "ec2:UnassignPrivateIpAddresses",
+      "lambda:InvokeFunction"
+    ]
+    resources = ["*"]
+  }
+}
+
+# Create permissions policy for the return_result role
+
+resource "aws_iam_policy" "return_result_policy" {
+  name        = "return_result_policy"
+  description = "Policy for return_result functions to invoke and return to each other"
+  policy      = data.aws_iam_policy_document.return_result_permissions.json
+}
+
+# Attach permissions policy to return_result role
+
+resource "aws_iam_role_policy_attachment" "attach_return_result_policy" {
+  role       = aws_iam_role.return_result_role.name
+  policy_arn = aws_iam_policy.return_result_policy.arn
 }

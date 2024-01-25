@@ -138,23 +138,23 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION extract_run_request(request_id_arg UUID)
 RETURNS TABLE (
-    start_time_var TIMESTAMP,
-    end_time_var TIMESTAMP,
-    kwh_to_charge_var NUMERIC,
-    kw_charge_rate_var NUMERIC
+    start_time_val TIMESTAMP,
+    end_time_val TIMESTAMP,
+    kwh_to_charge_val NUMERIC,
+    kw_charge_rate_val NUMERIC
 )
 AS $$
 DECLARE
-    start_time_var TIMESTAMP;
-    end_time_var TIMESTAMP;
-    kwh_to_charge_var NUMERIC;
-    kw_charge_rate_var NUMERIC;
+    start_time_val TIMESTAMP;
+    end_time_val TIMESTAMP;
+    kwh_to_charge_val NUMERIC;
+    kw_charge_rate_val NUMERIC;
 BEGIN
     SELECT start_time, end_time, kwh_to_charge, kw_charge_rate 
-    INTO start_time_var, end_time_var, kwh_to_charge_var, kw_charge_rate_var
+    INTO start_time_val, end_time_val, kwh_to_charge_val, kw_charge_rate_val
     FROM opt_requests 
     WHERE request_id = request_id_arg;
-    RETURN QUERY SELECT start_time_var, end_time_var, kwh_to_charge_var, kw_charge_rate_var;
+    RETURN QUERY SELECT start_time_val, end_time_val, kwh_to_charge_val, kw_charge_rate_val;
 END
 $$ LANGUAGE plpgsql;
 
@@ -183,29 +183,33 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION extract_time_window(prob_id_arg UUID)
 RETURNS TABLE (
-    start_time_var TIMESTAMP,
-    end_time_var TIMESTAMP,
-    node_var VARCHAR
+    start_time_val TIMESTAMP,
+    end_time_val TIMESTAMP,
+    node_val VARCHAR
 )
 AS $$
 DECLARE
-    start_time_var TIMESTAMP;
-    end_time_var TIMESTAMP;
-    node_var VARCHAR;
+    start_time_val TIMESTAMP;
+    end_time_val TIMESTAMP;
+    node_val VARCHAR;
 BEGIN
     SELECT start_time, end_time, node
-    INTO start_time_var, end_time_var, node_var
+    INTO start_time_val, end_time_val, node_val
     FROM opt_problems
     JOIN opt_requests ON opt_problems.request_id = opt_requests.request_id
     WHERE opt_problems.prob_id = prob_id_arg;
-    RETURN QUERY SELECT start_time_var, end_time_var, node_var;
+    RETURN QUERY SELECT start_time_val, end_time_val, node_val;
 END
 $$ LANGUAGE plpgsql;
 
 
 
 
-CREATE OR REPLACE FUNCTION extract_prob_prices(start_time_arg TIMESTAMP, end_time_arg TIMESTAMP, node_arg VARCHAR)
+CREATE OR REPLACE FUNCTION extract_prob_prices(
+    start_time_arg TIMESTAMP,
+    end_time_arg TIMESTAMP,
+    node_arg VARCHAR
+)
 RETURNS TABLE (
     node_val VARCHAR,
     trading_period_val SMALLINT,
@@ -263,3 +267,41 @@ $$ LANGUAGE plpgsql;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+-- For return_results_inner function:
+
+
+CREATE OR REPLACE FUNCTION extract_model_decisions(request_id_arg UUID)
+RETURNS TABLE (
+    trading_datetime_val TIMESTAMP,
+    decision_value_val BOOL,
+    price_val NUMERIC
+)
+AS $$
+DECLARE
+    record_row RECORD;
+BEGIN
+    FOR record_row IN
+        SELECT trading_datetime, decision_value, opt_run_decisions.price
+        FROM opt_run_decisions
+        JOIN price_forecasts ON opt_run_decisions.price_id = price_forecasts.price_id
+        WHERE opt_run_decisions.request_id = request_id_arg
+    LOOP
+        trading_datetime_val := record_row.trading_datetime;
+        decision_value_val := record_row.decision_value;
+        price_val := record_row.price;
+        RETURN NEXT;
+    END LOOP;
+END
+$$ LANGUAGE plpgsql;

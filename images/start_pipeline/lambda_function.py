@@ -71,7 +71,7 @@ def lambda_handler(event, context):
 
     # Return request_id to the user
     return {
-        "request_id" : uuid_to_string(request_id)
+        "id" : uuid_to_string(request_id)
     }
 
 def uuid_to_string(obj):

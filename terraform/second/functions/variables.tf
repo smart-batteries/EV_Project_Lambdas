@@ -15,6 +15,11 @@ variable "lambda_role_arn" {
   type        = string
 }
 
+variable "return_result_arn" {
+  description = "ARN of execution role for the return_result functions"
+  type        = string
+}
+
 
 
 

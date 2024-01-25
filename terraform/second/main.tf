@@ -50,9 +50,10 @@ module "functions" {
   source     = "./functions"
   depends_on = [module.roles, module.queue, module.network, module.database]
 
-  wits_role_arn   = module.roles.wits_role_arn
-  merge_role_arn  = module.roles.merge_role_arn
-  lambda_role_arn = module.roles.lambda_role_arn
+  wits_role_arn     = module.roles.wits_role_arn
+  merge_role_arn    = module.roles.merge_role_arn
+  lambda_role_arn   = module.roles.lambda_role_arn
+  return_result_arn = module.roles.return_result_arn
 
   client_id     = var.root_client_id
   client_secret = var.root_client_secret

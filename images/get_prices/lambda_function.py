@@ -1,16 +1,16 @@
 import os
 import sys
-import psycopg2
 import logging
+import psycopg2
 from uuid import uuid4
 
-# db connection settings
+# Set variables to connect to Postgres
 host = os.environ['RDS_HOST']
 dbname = os.environ['DB_NAME']
 user = os.environ['USER_NAME']
 password = os.environ['PASSWORD']
 
-# create logger object
+# Create logger object
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 

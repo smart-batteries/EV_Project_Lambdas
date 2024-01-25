@@ -27,7 +27,9 @@ data "aws_ecr_repository" "solver" {
 data "aws_ecr_repository" "return_result" {
   name = "return_result"
 }
-
+data "aws_ecr_repository" "return_result_inner" {
+  name = "return_result_inner"
+}
 
 
 
@@ -218,12 +220,42 @@ resource "aws_lambda_function" "solver" {
 }
 
 
+
+
+
+
 # Create return_result function
 
 resource "aws_lambda_function" "return_result" {
   function_name = "return_result"
   package_type  = "Image"
   image_uri     = "${data.aws_ecr_repository.return_result.repository_url}:latest"
-  role          = var.lambda_role_arn
-  timeout       = 60
+  role          = var.return_result_arn
+  timeout       = 120
 }
+
+
+# Create return_result_inner function
+
+resource "aws_lambda_function" "return_result_inner" {
+  function_name = "return_result_inner"
+  package_type  = "Image"
+  image_uri     = "${data.aws_ecr_repository.return_result_inner.repository_url}:latest"
+  role          = var.return_result_arn
+  timeout       = 60
+
+  vpc_config {
+    subnet_ids         = var.list_subnet_ids
+    security_group_ids = [ var.lambda_to_rds_id ]
+  }
+
+  environment {
+    variables = {
+      RDS_HOST  = var.rds_host
+      DB_NAME   = var.db_name
+      USER_NAME = var.username
+      PASSWORD  = var.password
+    }
+  }
+}
+
