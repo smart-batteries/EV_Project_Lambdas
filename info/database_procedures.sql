@@ -115,20 +115,17 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION insert_run_request(
+    request_id_val UUID,
     start_time_val TIMESTAMP,
     end_time_val TIMESTAMP,
     kwh_to_charge_val REAL,
     kw_charge_rate_val REAL,
     node_val VARCHAR
 )
-RETURNS UUID AS $$
-DECLARE
-    returning_id UUID;
+RETURNS VOID AS $$
 BEGIN
     INSERT INTO opt_requests (request_id, start_time, end_time, kwh_to_charge, kw_charge_rate, node)
-    VALUES (DEFAULT, start_time_val, end_time_val, kwh_to_charge_val, kw_charge_rate_val, node_val)
-    RETURNING request_id INTO returning_id;
-    RETURN returning_id;
+    VALUES (request_id_val, start_time_val, end_time_val, kwh_to_charge_val, kw_charge_rate_val, node_val);
 END
 $$ LANGUAGE plpgsql;
 

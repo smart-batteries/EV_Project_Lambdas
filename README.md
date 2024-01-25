@@ -16,15 +16,15 @@ Set up the software by following the instructions in the “How to set up the so
 
 Once you’ve set it up:
 
-1. Request the model to run.
+1. Call the request API, to request the model to run.
 * The request is sent to the model.
 * The model solves the optimisation problem and generates the charging schedule for your device.
-2. Request for the charging schedule.
+2. Call the result API, to retrieve the charging schedule.
 * The software returns the charging schedule for the device.
 
-## Architecture 
+## Architecture
 
-![architecture diagram](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/architecture.png)
+![architecture diagram](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/assets/architecture.png)
 
 The software has two pipelines.
 
@@ -81,7 +81,15 @@ __User request pipeline__
 
 ## Database schema
 
-_ERDs_
+![ERD](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/assets/ERD.png)
+
+  * price_forecasts: electricity price forecasts.
+  * opt_requests: user request, as accepted by the user request API.
+  * opt_problems: user request, represented as an optimsation problem for the model.
+  * opt_prob_prices: the price forecast for each time period of the optimsation problem.
+  * opt_runs: data used by the model during optimisation
+  * opt_run_decisions: model output for each time period of the optimsation problem.
+
 
 
 
@@ -217,12 +225,13 @@ Your PostgreSQL instance is currently empty. You need to add the tables and stor
 
 **Steps:**
 
-1. To connect to your RDS instance, follow [these instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_CommonTasks.Connect.html). Basically, in your local terminal, run this command: ```psql -h <your-rds-endpoint> -p 5432 -d <your-rds-database> -U <your-rds-user> -W```
+1. To connect to your RDS instance, you can: Download pgAdmin 4 and add it as a server; or connect in the terminal by following [these instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_CommonTasks.Connect.html). For either method, you'll need:
 
-  *  For the ```-h``` host flag, input the RDS endpoint. You can find that either in the console or via an AWS CLI command.
-  *  For the ```-d``` database flag, input ```ev_project_db```. (Assuming you didn't change the ```db_name``` argument in the ```terraform/second/database/main.tf``` doc.)
-  *  For the ```-U``` username flag, input the username you set in the ```terraform/second/variables.tf``` doc.
-  *  When the ```-W``` flag prompts you for a password, enter the password you set in the ```terraform/second/variables.tf``` doc.
+  *  Host: the RDS endpoint. You can find that either in the console or via an AWS CLI command.
+  *  Database: ```ev_project_db```. (Assuming you didn't change the ```db_name``` argument in the ```terraform/second/database/main.tf``` doc.)
+  *  Username: the username you set in the ```terraform/second/variables.tf``` doc.
+  *  Password: the password you set in the ```terraform/second/variables.tf``` doc.
+  *  Keep in mind: you need to be in the network you added to the ```connect_to_db``` security group in the ```terraform/second/variables.tf``` doc. (And disconnect from any VPNs.)
 
 2. To create the tables & an enum data type, run each SQL command in the [database tables.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20tables.sql) doc.
 3. To create the stored procedures & custom functions, run each SQL command in the [database procedures.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20procedures.sql) doc.

@@ -26,6 +26,7 @@ except (Exception, psycopg2.Error) as e:
 
 def lambda_handler(event, context):
 
+    request_id = event.get('request_id')
     start_time = event.get('start_time')
     end_time = event.get('end_time')
     kwh_to_charge = event.get('kwh_to_charge')
@@ -39,6 +40,7 @@ def lambda_handler(event, context):
             cur.callproc(
                 "insert_run_request",
                 (
+                    request_id,
                     datetime.strptime(start_time, '%Y-%m-%d %H:%M'),
                     datetime.strptime(end_time, '%Y-%m-%d %H:%M'),
                     kwh_to_charge,
@@ -47,7 +49,7 @@ def lambda_handler(event, context):
                 )
             )
             conn.commit()
-            request_id = cur.fetchone()[0]
+            # request_id = cur.fetchone()[0]
             logger.info(f"Successfully logged the run request in opt_requests table, for request_id: {request_id}.")
             
         except (Exception, psycopg2.Error) as e:
