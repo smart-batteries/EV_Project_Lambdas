@@ -15,7 +15,7 @@ jobs:
 
     steps:
     
-      - name: Check out
+      - name: Check out repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
@@ -23,9 +23,9 @@ jobs:
       - name: Check for updated images
         id: updated-images
         run: |
-          UPDATED=$(git diff --name-only HEAD^ HEAD)
-          UPDATED_IMAGES=$(echo "$UPDATED" | grep "images" | sed -E "s/\/\w+\.\w+$//g" | sort | uniq)
-          
+          UPDATED_FILES=$(git diff --name-only HEAD^ HEAD)
+          UPDATED_IMAGES=$(echo "$UPDATED_FILES" | grep "images" | cut -f 2 -d "/" | sort | uniq)
+
           if [ -n "$UPDATED_IMAGES" ]; then
             echo "These images have been updated:"
             echo "$UPDATED_IMAGES"
@@ -39,7 +39,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Log in to AWS ECR
         id: login-ecr
@@ -47,43 +47,48 @@ jobs:
 
       - name: Build, tag & publish Docker image to AWS ECR
         env:
-          UPDATED_IMAGES: ${{ steps.updated-images.outputs.UPDATED_IMAGES }}
+          UPDATED: ${{ steps.updated-images.outputs.UPDATED_IMAGES }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+          # IMAGE_TAG: ${{ github.sha }}
         run: |
           # Iterate over each updated Docker image
-          IFS=$'\n' # Set the internal field separator to newline
-          ########### do i need to add ${{ github.workspace }}/ for the root dir at the start of each path in UPDATED_IMAGES variable?
+          IFS=$'\n'
+          #### cofirm internal field separator
+          #### do i need to add ${{ github.workspace }}/ for the root dir at the start of each path in UPDATED variable?
           
-          for PATH in $UPDATED_IMAGES; do
+          for IMAGE in $UPDATED; do
             # Check whether Dockerfile exists
-            if test -f "$PATH/Dockerfile"; then
+            if test -f "$IMAGE/Dockerfile"; then
             
               # Build & push the Docker image
               docker build \
-                -f "$PATH"/Dockerfile \
-                -t $ECR_REGISTRY/$(basename "$PATH"):$IMAGE_TAG \
+                -f $IMAGE/Dockerfile \
+                -t $ECR_REGISTRY/$IMAGE:$IMAGE_TAG \
                 .
-              docker push $ECR_REGISTRY/$(basename "$PATH"):$IMAGE_TAG
+                #### needs to be like: docker build --platform linux/amd64 -t image_name:tag_name .
+
+              docker push $ECR_REGISTRY/$IMAGE:$IMAGE_TAG
               
             else
-              echo "Dockerfile not found in $PATH. Skipping build for this image."
+              echo "Dockerfile not found in $IMAGE. Skipping build for this image."
             fi
           done
           
       - name: Deploy the latest ECR image to its Lambda function
         env:
-          UPDATED_IMAGES: ${{ steps.updated-images.outputs.UPDATED_IMAGES }}
+          UPDATED: ${{ steps.updated-images.outputs.UPDATED_IMAGES }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           # Iterate for each updated Docker image
-          IFS=$'\n' # Set the internal field separator to newline
-          ########### do i need to add ${{ github.workspace }}/ for the root dir at the start of each path in UPDATED_IMAGES variable?
+          IFS=$'\n'
+          #### cofirm internal field separator
+          #### do i need to add ${{ github.workspace }}/ for the root dir at the start of each path in UPDATED variable?
 
-          for PATH in $UPDATED_IMAGES; do
+          for IMAGE in "$UPDATED"; do
             # Update Lambda function with the latest ECR image
             aws lambda update-function-code \
-            --function-name $(basename "$PATH") \
-            --image-uri $ECR_REGISTRY/$(basename "$PATH"):$IMAGE_TAG
+            --function-name $IMAGE \
+            --image-uri $ECR_REGISTRY/$IMAGE:$IMAGE_TAG
+            --publish ######## do i need this
           done

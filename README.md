@@ -2,7 +2,7 @@
 
 Charge your electric batteries at lowest cost.
 
-From anywhere in New Zealand, just send in your charging info: location, kW, kWh, when to start charging, and when it needs to be ready by. We have a deterministic optimisation model that uses wholesale electricity price forecasts to work out at what times your device should charge.
+From anywhere in New Zealand, just send in your charging info: location, kWh, kW, when to start charging, and when it needs to be ready by. We have a deterministic optimisation model that uses wholesale electricity price forecasts to work out at what times your device should charge.
 
 Wholesale electricity prices can vary a lot. This way, you can be fully charged at lowest cost and least environmental impact.
 
@@ -16,10 +16,10 @@ Set up the software by following the instructions in the “How to set up the so
 
 Once you’ve set it up:
 
-1. Call the request API, to request the model to run.
+1. Call the request API, to request the model to run, by following the instructions in the “Call the request API” section.
 * The request is sent to the model.
 * The model solves the optimisation problem and generates the charging schedule for your device.
-2. Call the result API, to retrieve the charging schedule.
+2. Call the result API, to retrieve the charging schedule, by following the instructions in the “Call the result API” section.
 * The software returns the charging schedule for the device.
 
 ## Architecture
@@ -42,18 +42,11 @@ Overall:
 * Process with [Docker](https://docker.com) images hosted on [AWS Lambda](https://aws.amazon.com/lambda).
 * Create AWS resources with [Terraform](https://www.terraform.io/).
 
-## Example
-
-_this bit_
 
 
 
 
 # How the software works
-
-## Solver model
-
-_Josh_
 
 ## ETL pipelines
 
@@ -83,12 +76,13 @@ __User request pipeline__
 
 ![ERD](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/info/ERD.png)
 
-  * price_forecasts: electricity price forecasts.
-  * opt_requests: user request, as accepted by the user request API.
-  * opt_problems: user request, represented as an optimsation problem for the model.
-  * opt_prob_prices: the price forecast for each time period of the optimsation problem.
-  * opt_runs: data used by the model during optimisation
-  * opt_run_decisions: model output for each time period of the optimsation problem.
+Tables:
+  * __price_forecasts:__ electricity price forecasts.
+  * __opt_requests:__ user request, as accepted by the user request API.
+  * __opt_problems:__ user request, represented as an optimsation problem for the model.
+  * __opt_prob_prices:__ the price forecast for each time period of the optimsation problem.
+  * __opt_runs:__ data used by the model during optimisation
+  * __opt_run_decisions:__ model output for each time period of the optimsation problem.
 
 
 
@@ -204,6 +198,10 @@ Now that the ECR repos are ready, set up the rest of the AWS resources:
 * HTTP API on API Gateway
 * State machine on Step Functions
 
+_Background info:_
+
+* _Ideally, the RDS instance is in a private subnet; but in that case, for the pipeline to access it, it would need a NAT gateway, which incurs a monthly cost. Currently, the Terraform config builds an RDS instance in a public subnet, but protects it with security groups that only allow access to the database from 2 sources: your home network; and specified Lambda functions. If you prefer to use a private subnet, the ```terraform/second/network/main.tf``` doc already has the relevant config for a NAT gateway; simply unhash it._
+
 **Steps:**
 
 1. Edit the ```terraform/second/variables.tf``` doc.
@@ -227,7 +225,7 @@ Your PostgreSQL instance is currently empty. You need to add the tables and stor
 
 1. To connect to your RDS instance, you can: Download pgAdmin 4 and add it as a server; or connect in the terminal by following [these instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_CommonTasks.Connect.html). For either method, you'll need:
 
-  *  Host: the RDS endpoint. You can find that either in the console or via an AWS CLI command.
+  *  Host: the RDS endpoint. You can find that either in the console's RDS section or via an AWS CLI command.
   *  Database: ```ev_project_db```. (Assuming you didn't change the ```db_name``` argument in the ```terraform/second/database/main.tf``` doc.)
   *  Username: the username you set in the ```terraform/second/variables.tf``` doc.
   *  Password: the password you set in the ```terraform/second/variables.tf``` doc.
@@ -237,3 +235,21 @@ Your PostgreSQL instance is currently empty. You need to add the tables and stor
 3. To create the stored procedures & custom functions, run each SQL command in the [database procedures.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20procedures.sql) doc.
 
 At this point, your instance of the software should be ready to use.
+
+## Call the request API
+
+1. Send a GET Request to the request API, in this format:
+<invoke_url>/<route>?start=<start>&end=<end>&kwh=<kwh>&kw=<kw>&node=<node>
+
+  *  invoke_url: You can find this either in the console's API Gateway section or via an AWS CLI command.
+  *  route: ```run```. (Assuming you didn't change the ```route_key``` argument in the ```terraform/second/user_api/main.tf``` doc.)
+  *  start and end: The datetimes for when the device can start charging and when it has to be fully charged by. The format is ```YYYY-MM-DD%20HH:mm```, where the ```%20``` in the middle is a URL-encoded space.
+  *  kwh: How much electricity the device needs to charge, in kWh.
+  *  kw: How fast the device charges, in kW.
+  *  node: The location on the electricity grid. Use [this website](https://www.ea.govt.nz/your-power/your-meter/address) to input your address or ICP number, click "Show all connection information", then find the "POC". This is your node.
+
+For example, if sending a curl command from the terminal, it could look like this:
+```curl -X GET "https://example_api_id.execute-api.aws_region.amazonaws.com/run?start=2024-02-01%2018:30&end=2024-02-02%2006:30&kwh=46&kw=7.7&node=WRD0331"```
+
+
+## Call the result API
