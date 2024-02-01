@@ -1,0 +1,53 @@
+name: Deploy to AWS Lambda
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: images
+
+jobs:
+  build_publish_deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag & push Docker images to AWS ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGES=("prss" "prsl" "merge" "purge" "start_pipeline" "log_request" "create_problem" "get_prices" "solver" "return_result" "return_result_inner")
+
+          # Iterate over each Docker image
+          IFS=' '
+          for IMAGE in $IMAGES; do
+            
+            # Build & tag the Docker image
+            echo "Building the image:"
+            echo $IMAGE
+            docker build "$IMAGE" \
+              -f $IMAGE/Dockerfile \
+              -t $ECR_REGISTRY/$IMAGE:latest
+
+            # Push the Docker image
+            echo "Pushing the image:"
+            echo $IMAGE
+            docker push $ECR_REGISTRY/$IMAGE:latest
+
+          done
