@@ -97,6 +97,5 @@ jobs:
             aws lambda update-function-code \
             --function-name $IMAGE \
             --image-uri $ECR_REGISTRY/$IMAGE:latest
-            --publish
             
           done

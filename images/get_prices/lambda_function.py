@@ -55,7 +55,7 @@ def lambda_handler(event, context):
             logger.error("ERROR: Failed to extract the trading periods for the time window.")
             logger.error(e)
             sys.exit()
-        
+            
         for forecast in forecast_data:
                 
             # Insert the price forecasts of each half-hour interval of the optimisation problem, into opt_prob_prices table
