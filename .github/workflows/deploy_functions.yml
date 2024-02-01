@@ -1,4 +1,4 @@
-name: Deploy to AWS lambda functions
+name: Deploy to AWS Lambda
 
 on:
   push:
@@ -6,12 +6,14 @@ on:
      - 'images/**'
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: images
 
 jobs:
   build_publish_deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
     
@@ -25,8 +27,11 @@ jobs:
         run: |
           UPDATED_FILES=$(git diff --name-only HEAD^ HEAD)
           UPDATED_IMAGES=$(echo "$UPDATED_FILES" | grep "images" | cut -f 2 -d "/" | sort | uniq)
+          echo "UPDATED_IMAGES<<EOF" >> $GITHUB_OUTPUT
+          echo $UPDATED_IMAGES >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-          if [ -n "$UPDATED_IMAGES" ]; then
+          if [ -n $UPDATED_IMAGES ]; then
             echo "These images have been updated:"
             echo "$UPDATED_IMAGES"
           else
@@ -39,56 +44,59 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Log in to AWS ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag & publish Docker image to AWS ECR
+      - name: Build, tag & push Docker images to AWS ECR
         env:
           UPDATED: ${{ steps.updated-images.outputs.UPDATED_IMAGES }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          # IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Iterate over each updated Docker image
-          IFS=$'\n'
-          #### cofirm internal field separator
-          #### do i need to add ${{ github.workspace }}/ for the root dir at the start of each path in UPDATED variable?
-          
-          for IMAGE in $UPDATED; do
-            # Check whether Dockerfile exists
-            if test -f "$IMAGE/Dockerfile"; then
-            
-              # Build & push the Docker image
-              docker build \
-                -f $IMAGE/Dockerfile \
-                -t $ECR_REGISTRY/$IMAGE:$IMAGE_TAG \
-                .
-                #### needs to be like: docker build --platform linux/amd64 -t image_name:tag_name .
+          echo "These images have been updated:"
+          echo $UPDATED
 
-              docker push $ECR_REGISTRY/$IMAGE:$IMAGE_TAG
-              
-            else
-              echo "Dockerfile not found in $IMAGE. Skipping build for this image."
-            fi
+          # Iterate over each updated Docker image
+          IFS=' '
+
+          for IMAGE in $UPDATED; do
+            
+            # Build & tag the Docker image
+            echo "Building the image:"
+            echo $IMAGE
+            docker build "$IMAGE" \
+              -f $IMAGE/Dockerfile \
+              -t $ECR_REGISTRY/$IMAGE:latest
+
+            # Push the Docker image
+            echo "Pushing the image:"
+            echo $IMAGE
+            docker push $ECR_REGISTRY/$IMAGE:latest
+
           done
-          
+
       - name: Deploy the latest ECR image to its Lambda function
         env:
           UPDATED: ${{ steps.updated-images.outputs.UPDATED_IMAGES }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Iterate for each updated Docker image
-          IFS=$'\n'
-          #### cofirm internal field separator
-          #### do i need to add ${{ github.workspace }}/ for the root dir at the start of each path in UPDATED variable?
+          echo "These images have been updated:"
+          echo $UPDATED
 
-          for IMAGE in "$UPDATED"; do
+          # Iterate over each updated Docker image
+          IFS=$' '
+
+          for IMAGE in $UPDATED; do
+
             # Update Lambda function with the latest ECR image
+            echo "Deploying the image:"
+            echo $IMAGE
+
             aws lambda update-function-code \
             --function-name $IMAGE \
-            --image-uri $ECR_REGISTRY/$IMAGE:$IMAGE_TAG
-            --publish ######## do i need this
+            --image-uri $ECR_REGISTRY/$IMAGE:latest
+            --publish
+            
           done

@@ -248,8 +248,6 @@ At this point, your instance of the software should be ready to use.
   *  kw: How fast the device charges, in kW.
   *  node: The location on the electricity grid. Use [this website](https://www.ea.govt.nz/your-power/your-meter/address) to input your address or ICP number, click "Show all connection information", then find the "POC". This is your node.
 
-For example, if sending a curl command from the terminal, it could look like this:
-```curl -X GET "https://example_api_id.execute-api.aws_region.amazonaws.com/run?start=2024-02-01%2018:30&end=2024-02-02%2006:30&kwh=46&kw=7.7&node=WRD0331"```
+    For example, if sending a curl command from the terminal, it could look like this:
 
-
-## Call the result API
+    ```curl -X GET "https://example_api_id.execute-api.aws_region.amazonaws.com/run?start=2024-02-01%2018:30&end=2024-02-02%2006:30&kwh=46&kw=7.7&node=WRD0331"```

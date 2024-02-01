@@ -12,17 +12,6 @@ logger.setLevel(logging.INFO)
 lambda_client = boto3.client('lambda')
 
 
-
-
-# model's output is stored in the opt_run_decisions table
-
-# function extracts the request_id from the result call
-# from opt_run_decisions table, for the request_id, get each price_id and decision_value
-# join to price_forecasts table, for each price_id, get the corresponding datetime & price
-
-
-
-
 def lambda_handler(event, context):
 
     # Extract user's request_id from the their call to the result API

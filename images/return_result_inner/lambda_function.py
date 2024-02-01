@@ -25,19 +25,6 @@ except (Exception, psycopg2.Error) as e:
     sys.exit()
 
 
-
-
-
-
-# model's output is stored in the opt_run_decisions table
-
-# function extracts the request_id from the result call
-# from opt_run_decisions table, for the request_id, get each price_id and decision_value
-# join to price_forecasts table, for each price_id, get the corresponding datetime & price
-
-
-
-
 def lambda_handler(event, context):
 
     request_id = event['request_id']
