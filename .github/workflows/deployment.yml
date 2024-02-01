@@ -1,4 +1,4 @@
-name: Deploy to AWS Lambda
+name: CI/CD deployment to AWS Lambda
 
 on:
   push:
