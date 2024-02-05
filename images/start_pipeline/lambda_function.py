@@ -44,7 +44,7 @@ def lambda_handler(event, context):
     # Trigger the step function to invoke the downstream functions
     try:
 
-        request_id = uuid4()
+        request_id = uuid_to_string(uuid4())
 
         input = {
             "user_request" : {
@@ -71,7 +71,7 @@ def lambda_handler(event, context):
 
     # Return request_id to the user
     return {
-        "id" : uuid_to_string(request_id)
+        "id" : request_id
     }
 
 def uuid_to_string(obj):

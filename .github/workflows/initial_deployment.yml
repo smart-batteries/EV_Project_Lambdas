@@ -1,4 +1,4 @@
-name: Initial deployment to AWS Lambda
+name: Initial deployment to AWS ECR
 
 on:
   workflow_dispatch:
@@ -22,7 +22,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Log in to AWS ECR
         id: login-ecr

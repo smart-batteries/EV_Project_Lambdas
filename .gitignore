@@ -2,3 +2,4 @@ DeterministicSolver/__pycache__/
 *.ipynb_checkpoints/
 *.terraform*
 *.tfstate*
+terraform/second/variables.tf
