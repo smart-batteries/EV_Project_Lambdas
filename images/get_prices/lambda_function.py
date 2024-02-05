@@ -47,9 +47,13 @@ def lambda_handler(event, context):
         try:
             cur.callproc('extract_prob_prices', (start_time, end_time, node))
             forecast_data = cur.fetchall()
-            start_period = min(forecast_data, key = lambda x: x[1])[1]
-            end_period = max(forecast_data, key = lambda x: x[1])[1]
+            start_period = min(forecast_data, key = lambda x: x[1], default=0)[1]
+            end_period = max(forecast_data, key = lambda x: x[1], default=0)[1]
             logger.info(f"Successfully extracted the price forecasts, from trading periods {start_period} to {end_period}.")
+
+        except ValueError as e:
+            if "min() arg is an empty sequence" in str(e):
+                pass
 
         except Exception as e:
             logger.error("ERROR: Failed to extract the trading periods for the time window.")
