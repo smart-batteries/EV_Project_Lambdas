@@ -26,12 +26,19 @@ except (Exception, psycopg2.Error) as e:
 
 def lambda_handler(event, context):
 
-    request_id = event.get('request_id')
-    start_time = event.get('start_time')
-    end_time = event.get('end_time')
-    kwh_to_charge = event.get('kwh_to_charge')
-    kw_charge_rate = event.get('kw_charge_rate')
-    node = event.get('node')
+    try:
+        request_id = event.get('request_id')
+        start_time = event.get('start_time')
+        end_time = event.get('end_time')
+        kwh_to_charge = event.get('kwh_to_charge')
+        kw_charge_rate = event.get('kw_charge_rate')
+        node = event.get('node')
+        logger.info(f"Successfully extracted user request data, for request_id: {request_id}.")
+
+    except (Exception, psycopg2.Error) as e:
+            logger.error("ERROR: Failed to extract the user request data.")
+            logger.error(e)
+            sys.exit()
 
     with conn.cursor() as cur:
         
