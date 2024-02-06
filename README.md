@@ -2,7 +2,7 @@
 
 Charge your electric batteries at lowest cost.
 
-From anywhere in New Zealand, just send in your charging info: location, kWh, kW, when to start charging, and when it needs to be ready by. We have a deterministic optimisation model that uses wholesale electricity price forecasts to work out at what times your device should charge.
+From anywhere in New Zealand, just send in your charging info: location, kWh, kW, when to start charging, and when the battery needs to be ready by. We have a deterministic optimisation model that uses wholesale electricity price forecasts to work out at what times your device should charge.
 
 Wholesale electricity prices can vary a lot. This way, you can be fully charged at lowest cost and least environmental impact.
 
@@ -17,9 +17,11 @@ Set up the software by following the instructions in the “How to set up the so
 Once you’ve set it up:
 
 1. Call the request API, to request the model to run, by following the instructions in the “Call the request API” section.
-* The request is sent to the model.
+* Send your request to the model.
 * The model solves the optimisation problem and generates the charging schedule for your device.
+
 2. Call the result API, to retrieve the charging schedule, by following the instructions in the “Call the result API” section.
+* Send your tracking id to the model.
 * The software returns the charging schedule for the device.
 
 ## Architecture
@@ -35,10 +37,12 @@ The first:
 * Loads the data into a [PostgreSQL](https://postgresql.org) instance on [AWS RDS](https://aws.amazon.com/rds).
 
 The second:
+
 * Receives user requests and serves responses with [AWS API Gateway](https://aws.amazon.com/api-gateway).
 * Orchestrates the response with [AWS Step Functions](https://aws.amazon.com/step-functions).
 
 Overall:
+
 * Process with [Docker](https://docker.com) images hosted on [AWS Lambda](https://aws.amazon.com/lambda).
 * Create AWS resources with [Terraform](https://www.terraform.io/).
 
@@ -165,23 +169,10 @@ At this point, you should have empty repos on ECR and empty log groups on CloudW
 Now, you have empty repos on [ECR](https://aws.amazon.com/ecr/), which need to be populated by the Docker images.
 
 If you've forked this repo to your own GitHub repo, you can automate this from there:
-1. Add your AWS region, CLI access key id and secret to GitHub secrets. They should be named AWS_REGION, AWS_ACCESS_KEY_ID and AWS_ACCESS_KEY_SECRET respectively.
-2. Dispatch the ```.github/workflows/deploy_functions.yml``` workflow.
-
-Alternatively, you can do it manually from your local terminal:
-1. If you haven't already, [install Docker](https://docs.docker.com/engine/install/).
-  * Follow the best practises, such as: creating a user to add to the ```docker``` group.
-  * Verify installation by running: ```docker --version```
-2. Switch to your Docker user. Use the ```aws ecr get-login-password``` command to authenticate it to ECR, following [these instructions](https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html).
-3. Push your Docker images, following [these instructions](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html). That means, for __each__ image:
-  * Change to its directory. For example, if you're starting with the PRSS image: ```cd EV_Project_Lambdas/images/prss```
-    * Don't forget this step or you'll build the wrong image under the wrong name, which will end up being confusing.
-  * Build the image, for example: ```docker build --platform linux/amd64 -t prss:test .```
-    * Don't forget the final ```.``` at the end of the command
-  * Tag the image, for example: ```docker tag prss:test <your-aws-account>.dkr.ecr.<your-aws-region>.amazonaws.com/prss:latest```
-  * Deploy the image, for example: ```docker push <your-aws-account>.dkr.ecr.<your-aws-region>.amazonaws.com/prss:latest```
-    * If it's been a while and you need to re-authenticate, simple run the same ```aws ecr get-login-password``` command.
-  * Remove the tagged image, for example: ```docker rmi <your-aws-account>.dkr.ecr.<your-aws-region>.amazonaws.com/prss:latest```
+1. In the GitHut Actions secrets and variables section:
+  * Add the variable ```AWS_REGION```. Use __the same__ region as you did in the ```terraform/first/variables.tf``` doc.
+  * Add the secrets ```AWS_ACCESS_KEY_ID``` and ```AWS_ACCESS_KEY_SECRET```, to access AWS CLI.
+2. Dispatch the ```.github/workflows/initial_deployment.yml``` workflow.
 
 At this point, each of your ECR repos should have its corresponding Docker image.
 
@@ -200,7 +191,7 @@ Now that the ECR repos are ready, set up the rest of the AWS resources:
 
 _Background info:_
 
-* _Ideally, the RDS instance is in a private subnet; but in that case, for the pipeline to access it, it would need a NAT gateway, which incurs a monthly cost. Currently, the Terraform config builds an RDS instance in a public subnet, but protects it with security groups that only allow access to the database from 2 sources: your home network; and specified Lambda functions. If you prefer to use a private subnet, the ```terraform/second/network/main.tf``` doc already has the relevant config for a NAT gateway; simply unhash it._
+* _Ideally, the RDS instance is in a private subnet; but in that case, for the pipeline to access it, it would need a NAT gateway, which incurs a monthly cost. Currently, the Terraform config builds an RDS instance in a public subnet. If you prefer to use a private subnet, the ```terraform/second/network/main.tf``` doc already has the relevant config for a NAT gateway; simply unhash it._
 
 **Steps:**
 
@@ -209,6 +200,7 @@ _Background info:_
   * Add the IP address of your home network (or wherever you want to connect to your database from).
   * Create a username and password to log in to your database. Save this for later.
   * Add the client id and secret from your WITS developer account.
+
 2. Change to the ```EV_Project_Lambdas/terraform/second``` directory and run:
 <pre>
 terraform init
@@ -226,28 +218,54 @@ Your PostgreSQL instance is currently empty. You need to add the tables and stor
 1. To connect to your RDS instance, you can: Download pgAdmin 4 and add it as a server; or connect in the terminal by following [these instructions](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_CommonTasks.Connect.html). For either method, you'll need:
 
   *  Host: the RDS endpoint. You can find that either in the console's RDS section or via an AWS CLI command.
-  *  Database: ```ev_project_db```. (Assuming you didn't change the ```db_name``` argument in the ```terraform/second/database/main.tf``` doc.)
   *  Username: the username you set in the ```terraform/second/variables.tf``` doc.
   *  Password: the password you set in the ```terraform/second/variables.tf``` doc.
   *  Keep in mind: you need to be in the network you added to the ```connect_to_db``` security group in the ```terraform/second/variables.tf``` doc. (And disconnect from any VPNs.)
 
-2. To create the tables & an enum data type, run each SQL command in the [database tables.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20tables.sql) doc.
-3. To create the stored procedures & custom functions, run each SQL command in the [database procedures.md](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/database%20procedures.sql) doc.
+2. To create the tables & an enum data type, run each SQL command in the [database tables.sql](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/info/database%20tables.sql) doc.
+
+3. To create the stored procedures & custom functions, run each SQL command in the [database procedures.sql](https://github.com/smart-batteries/EV_Project_Lambdas/blob/main/info/database%20procedures.sql) doc.
 
 At this point, your instance of the software should be ready to use.
 
 ## Call the request API
 
-1. Send a GET Request to the request API, in this format:
-<invoke_url>/<route>?start=<start>&end=<end>&kwh=<kwh>&kw=<kw>&node=<node>
+1. Send a GET request to the request API, in this format:
 
-  *  invoke_url: You can find this either in the console's API Gateway section or via an AWS CLI command.
-  *  route: ```run```. (Assuming you didn't change the ```route_key``` argument in the ```terraform/second/user_api/main.tf``` doc.)
-  *  start and end: The datetimes for when the device can start charging and when it has to be fully charged by. The format is ```YYYY-MM-DD%20HH:mm```, where the ```%20``` in the middle is a URL-encoded space.
-  *  kwh: How much electricity the device needs to charge, in kWh.
-  *  kw: How fast the device charges, in kW.
-  *  node: The location on the electricity grid. Use [this website](https://www.ea.govt.nz/your-power/your-meter/address) to input your address or ICP number, click "Show all connection information", then find the "POC". This is your node.
+```<invoke_url>/<route>?start=<start>&end=<end>&kwh=<kwh>&kw=<kw>&node=<node>```
+
+  * invoke_url of the _request_ API: You can find this either in the console's API Gateway section or via an AWS CLI command.
+  * route: ```run```. (Assuming you didn't change the ```route_key``` argument in the ```terraform/second/user_api/main.tf``` doc.)
+  * start and end: The datetimes for when the device can start charging and when it has to be fully charged by. The format is ```YYYY-MM-DD%20HH:mm```, where the ```%20``` in the middle is a URL-encoded space.
+  * kwh: How much electricity the device needs to charge, in kWh.
+  * kw: How fast the device charges, in kW.
+  * node: The location on the electricity grid. Use [this website](https://www.ea.govt.nz/your-power/your-meter/address) to input your address or ICP number, click "Show all connection information", then find the "POC". This is your node.
+  
+    For example, if sending a curl command from the terminal, it could look like this:
+
+    <pre>
+    curl -X GET "https://example_request_api_id.execute-api.aws_region.amazonaws.com/run?start=2024-02-01%2018:30&end=2024-02-02%2006:30&kwh=46&kw=7.7&node=WRD0331"
+    </pre>
+
+2. You'll receive a response, in the format below. Save this id for later; ideally, save the charging details of your input, as well.
+    <pre>
+    {
+      "id" : "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    }
+    </pre>
+## Call the result API
+
+1. Send a GET request to the result API, in this format:
+
+```<invoke_url>/<route>?id=<id>```
+
+  * invoke_url of the _result_ API: You can find this either in the console's API Gateway section or via an AWS CLI command.
+  * route: ```result```. (Assuming you didn't change the ```route_key``` argument in the ```terraform/second/user_api/main.tf``` doc.)
+  * id: The id you received when you called the request API.
 
     For example, if sending a curl command from the terminal, it could look like this:
 
-    ```curl -X GET "https://example_api_id.execute-api.aws_region.amazonaws.com/run?start=2024-02-01%2018:30&end=2024-02-02%2006:30&kwh=46&kw=7.7&node=WRD0331"```
+    <pre>
+    curl -X GET "https://example_result_api_id.execute-api.aws_region.amazonaws.com/result?id=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    </pre>
+2. You'll receive a charging schedule for that device, in the format below.
